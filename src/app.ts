@@ -9,7 +9,7 @@ import AppError from "./Utils/appError";
 require("dotenv").config();
 
 const bot = new Telegraf(`${process.env.TELEGRAM_TOKEN}`);
-const web_link = "https://base-bot-app.vercel.app/mobile/welcome";
+const web_link = "https://base-bot-app.vercel.app/welcome";
 
 AppDataSource.initialize()
   .then(async () => {
