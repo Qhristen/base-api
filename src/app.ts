@@ -3,14 +3,12 @@ import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import os from "os";
 import validateEnv from "./Utils/validateEnv";
 import AppError from "./Utils/appError";
 import { Telegraf } from "telegraf";
 
 require("dotenv").config();
 
-const numCpus = os.cpus().length;
 const bot = new Telegraf(`${process.env.TELEGRAM_TOKEN}`);
 const web_link = "https://base-bot-app.vercel.app/mobile/welcome";
 
