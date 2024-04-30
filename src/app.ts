@@ -3,8 +3,6 @@ import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { UserRoute } from "./User";
-import cluster from "cluster";
 import os from "os";
 import validateEnv from "./Utils/validateEnv";
 import AppError from "./Utils/appError";
@@ -12,12 +10,9 @@ import { Telegraf } from "telegraf";
 
 require("dotenv").config();
 
-
 const numCpus = os.cpus().length;
 const bot = new Telegraf(`${process.env.TELEGRAM_TOKEN}`);
 const web_link = "https://base-bot-app.vercel.app/mobile/welcome";
-
-
 
 AppDataSource.initialize()
   .then(async () => {
@@ -36,34 +31,31 @@ AppDataSource.initialize()
       `;
       ctx.replyWithHTML(welcomeMessage);
     });
-  
+
     bot.command("help", async (ctx) => {
       ctx.reply(`Help is on the way`);
     });
-  
+
     bot.command("profile", async (ctx) => {
       ctx.reply(`Profile is on the way`);
     });
-  
+
     bot.command("invite", async (ctx) => {
       ctx.reply(`Invite is on the way`);
     });
-  
+
     bot.command("socials", async (ctx) => {
       ctx.reply(
         `Socials is on the way`,
-  
+
         {
           reply_markup: {
-            inline_keyboard: [
-              [{ text: "Play", web_app: { url: web_link } }],
-            ],
+            inline_keyboard: [[{ text: "Play", web_app: { url: web_link } }]],
           },
         }
       );
     });
-  
-    bot.launch();
+
 
     // MIDDLEWARE
 
@@ -114,19 +106,11 @@ AppDataSource.initialize()
       }
     );
 
-    const port = process.env.PORT;
-    if (cluster.isPrimary) {
-      for (let i = 0; i < numCpus; i++) {
-        cluster.fork();
-      }
+    bot.launch();
 
-      cluster.on("exit", (worker, code, signal) => {
-        console.log(`Worker pid: ${worker.process.pid} died`);
-        cluster.fork();
-      });
-    } else {
-      app.listen(port);
-      console.log(`Server started with pid: ${process.pid} on port: ${port}`);
-    }
+    const port = process.env.PORT;
+
+    app.listen(port);
+    console.log(`Server started on port: ${port}`);
   })
   .catch((error) => console.log(error));
