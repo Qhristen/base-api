@@ -3,9 +3,8 @@ import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import validateEnv from "./Utils/validateEnv";
-import AppError from "./Utils/appError";
 import { Telegraf } from "telegraf";
+import AppError from "./Utils/appError";
 
 require("dotenv").config();
 
@@ -14,9 +13,7 @@ const web_link = "https://base-bot-app.vercel.app/mobile/welcome";
 
 AppDataSource.initialize()
   .then(async () => {
-    // VALIDATE ENV
-    validateEnv();
-
+  
     const app = express();
 
     app.set("trust proxy", 1);
