@@ -4,12 +4,14 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { Telegraf } from "telegraf";
+import { message } from "telegraf/filters";
 import AppError from "./Utils/appError";
+import router from "./routes";
 
 require("dotenv").config();
 
 const bot = new Telegraf(`${process.env.TELEGRAM_TOKEN}`);
-const web_link = "https://base-bot-app.vercel.app/welcome";
+const web_link = `${process.env.ORIGIN}/welcome`;
 
 AppDataSource.initialize()
   .then(async () => {
@@ -26,6 +28,9 @@ AppDataSource.initialize()
       `;
       ctx.replyWithHTML(welcomeMessage);
     });
+
+    bot.on(message('sticker'), (ctx) => ctx.reply('👍'))
+    bot.hears('hi', (ctx) => ctx.reply('Hey there'))
 
     bot.command("help", async (ctx) => {
       ctx.reply(`Help is on the way`);
@@ -51,7 +56,13 @@ AppDataSource.initialize()
       );
     });
 
+    bot.on(message('web_app_data'), async (ctx) => {
+       const text = ctx.webAppData?.data;
+       ctx.reply(`data from web app ${text}`);
+       console.log(text, 'text')
+    })
 
+  
     // MIDDLEWARE
 
     // Body parser
@@ -73,7 +84,7 @@ AppDataSource.initialize()
     );
 
     // ROUTES
-    // app.use("/api/auth", AuthRoute);
+    app.use("/api", router);
 
     // HEALTH CHECKER
     app.get("/", async (req: Request, res: Response) => {
