@@ -1,16 +1,16 @@
-import { AppDataSource } from "./Utils/data-source";
+import { AppDataSource } from "./utils/data-source";
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import AppError from "./Utils/appError";
+import AppError from "./utils/appError";
 import router from "./routes";
+import { bot } from "./utils/telegram";
 
 require("dotenv").config();
 
-const bot = new Telegraf(`${process.env.TELEGRAM_TOKEN}`);
 const web_link = `${process.env.ORIGIN}/welcome`;
 
 AppDataSource.initialize()
