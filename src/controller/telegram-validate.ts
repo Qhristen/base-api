@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { getCheckString } from "../utils/getCheckString";
 import { HMAC_SHA256 } from "../utils/HMAC_SHA256";
 
+
 export const telegramValidate = async (
   req: Request,
   res: Response,
