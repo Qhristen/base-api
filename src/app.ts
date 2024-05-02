@@ -1,22 +1,21 @@
-import { AppDataSource } from "./utils/data-source";
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import AppError from "./utils/appError";
 import router from "./routes";
+import { AppDataSource } from "./lib/data-source";
+import { Bot } from "./lib/telegram";
+import AppError from "./lib/appError";
 
 require("dotenv").config();
 
-const bot = new Telegraf(`${process.env.TELEGRAM_TOKEN}`);
 const web_link = `${process.env.ORIGIN}/welcome`;
 
 AppDataSource.initialize()
   .then(async () => {
-  
     const app = express();
+    const bot = Bot;
 
     app.set("trust proxy", 1);
 
@@ -29,8 +28,8 @@ AppDataSource.initialize()
       ctx.replyWithHTML(welcomeMessage);
     });
 
-    bot.on(message('sticker'), (ctx) => ctx.reply('👍'))
-    bot.hears('hi', (ctx) => ctx.reply('Hey there'))
+    bot.on(message("sticker"), (ctx) => ctx.reply("👍"));
+    bot.hears("hi", (ctx) => ctx.reply("Hey there"));
 
     bot.command("help", async (ctx) => {
       ctx.reply(`Help is on the way`);
@@ -56,13 +55,12 @@ AppDataSource.initialize()
       );
     });
 
-    bot.on(message('web_app_data'), async (ctx) => {
-       const text = ctx.webAppData?.data;
-       ctx.reply(`data from web app ${text}`);
-       console.log(text, 'text')
-    })
+    bot.on(message("web_app_data"), async (ctx) => {
+      const text = ctx.webAppData?.data;
+      ctx.reply(`data from web app ${text}`);
+      console.log(text, "text");
+    });
 
-  
     // MIDDLEWARE
 
     // Body parser

@@ -1,13 +1,13 @@
 {
-  "name": "wavesdev",
+  "name": "base_api",
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
     "start": "ts-node-dev --respawn --transpile-only --exit-child src/app.ts",
     "build": "tsc -p .",
     "typeorm": "typeorm-ts-node-commonjs",
-    "migrate": "ts-node ./node_modules/typeorm/cli.js migration:run -d src/utils/data-source.ts",
-    "generate": "ts-node ./node_modules/typeorm/cli.js migration:generate ./src/Migrations/mydatasource -d ./src/utils/data-source.ts -p",
+    "migrate": "ts-node ./node_modules/typeorm/cli.js migration:run -d src/lib/data-source.ts",
+    "generate": "ts-node ./node_modules/typeorm/cli.js migration:generate ./src/Migrations/mydatasource -d ./src/lib/data-source.ts -p",
     "seed": "ts-node ./node_modules/typeorm-extension/dist/cli/index.js seed"
   },
   "dependencies": {
