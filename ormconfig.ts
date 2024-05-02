@@ -8,7 +8,7 @@ export default {
   port: Number(Config.postgresConfig.port),
   synchronize: true,
   logging: false,
-  entities: ["src/Entities/**/*.entity{.ts,.js}"],
-  seeds: ["src/Seeds/*.seeder.ts"],
+  entities: ["src/entities/**/*.entity{.ts,.js}"],
+  seeds: ["src/seeds/*.seeder.ts"],
   factories: ["src/Seeds/factory/*.factory.ts"],
 };
