@@ -54,10 +54,21 @@ AppDataSource.initialize()
 
     bot.action("join", (ctx) => ctx.reply("👍"));
 
-    bot.hears("hi", (ctx) => ctx.reply("Hey there"));
-
     bot.command("help", async (ctx) => {
-      ctx.reply(`Help is on the way`);
+      const message = `
+      Tap to Earn: \nBase is an addictive clicker game where you accumulate Shares by tapping the screen.\n\nLeagues:\nClimb the ranks by earning more Shares and outperforming others in the leagues.\n\nBoosts:\nUnlock boosts and complete tasks to maximize your Shares earnings.\n\nFriends:\nInvite others and both of you will receive bonuses. Assist your friends in advancing to higher leagues for bigger Shares rewards.\n\nThe Purpose:\nCollect as many Shares as possible and exchange them for TAPS, Base Token on Solana Blockchain.\n\nType /help to access this guide.`;
+
+      ctx.replyWithPhoto(
+        { url: photoUrl },
+        {
+          caption: message,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Start now!", web_app: { url: web_link } }],
+            ],
+          },
+        }
+      );
     });
 
     bot.command("profile", async (ctx) => {
@@ -70,11 +81,30 @@ AppDataSource.initialize()
 
     bot.command("socials", async (ctx) => {
       ctx.reply(
-        `Socials is on the way`,
-
+        `Join our socials so you do not miss any important news or updates.`,
         {
           reply_markup: {
-            inline_keyboard: [[{ text: "Play", web_app: { url: web_link } }]],
+            inline_keyboard: [
+              [
+                {
+                  text: "Join Base community",
+                  url: `${process.env.ORIGIN}`,
+                },
+              ],
+              [
+                {
+                  text: "Base on X",
+                  url: `${process.env.ORIGIN}`,
+                },
+              ],
+              [
+                {
+                  text: "Base website",
+                  url: `${process.env.ORIGIN}`,
+                },
+              ],
+              [{ text: "Play now!", web_app: { url: web_link } }],
+            ],
           },
         }
       );
