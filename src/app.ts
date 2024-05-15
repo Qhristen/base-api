@@ -11,6 +11,7 @@ import AppError from "./lib/appError";
 require("dotenv").config();
 
 const web_link = `${process.env.ORIGIN}/welcome`;
+const photoUrl = `${process.env.ORIGIN}/logo.png`;
 
 AppDataSource.initialize()
   .then(async () => {
@@ -23,12 +24,36 @@ AppDataSource.initialize()
     bot.start((ctx) => {
       const username = ctx.message!.from!.username;
       const welcomeMessage = `
-      Hey, @${username}! Welcome to Base! Tap on the coin and see your balance rise.\nBase is a Decentralized Exchange on the Solana Blockchain. The biggest part of Base Token TAPS distribution will occur among the players here.\nGot friends, relatives, co-workers?\nBring them all into the game.\nMore buddies, more coins.
+    Hey, @${username}! Welcome to Base! Tap on the coin and see your balance rise.\n\nBase is a Decentralized Exchange on the Solana Blockchain. The biggest part of Base Token TAPS distribution will occur among the players here.\n\nGot friends, relatives, co-workers?\nBring them all into the game.\nMore buddies, more coins.
       `;
-      ctx.replyWithHTML(welcomeMessage);
+
+      ctx.replyWithPhoto(
+        { url: photoUrl },
+        {
+          caption: welcomeMessage,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Start now!", web_app: { url: web_link } }],
+              [
+                {
+                  text: "Join community",
+                  callback_data: "join",
+                },
+              ],
+              [
+                {
+                  text: "Help",
+                  callback_data: "help",
+                },
+              ],
+            ],
+          },
+        }
+      );
     });
 
-    bot.on(message("sticker"), (ctx) => ctx.reply("👍"));
+    bot.action("join", (ctx) => ctx.reply("👍"));
+
     bot.hears("hi", (ctx) => ctx.reply("Hey there"));
 
     bot.command("help", async (ctx) => {
