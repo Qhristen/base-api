@@ -2,7 +2,6 @@ import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { message } from "telegraf/filters";
 import router from "./routes";
 import { AppDataSource } from "./lib/data-source";
 import { Bot } from "./lib/telegram";
@@ -52,7 +51,9 @@ AppDataSource.initialize()
       );
     });
 
+
     bot.action("join", (ctx) => ctx.reply("👍"));
+
 
     bot.command("help", async (ctx) => {
       const message = `
@@ -72,11 +73,29 @@ AppDataSource.initialize()
     });
 
     bot.command("profile", async (ctx) => {
-      ctx.reply(`Profile is on the way`);
+      const username = ctx.message!.from!.username;
+
+      ctx.reply(
+        `@${username} profile\n\nNovice\nTotal score: 0\n\n/profile for personal stats`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "Invit friends",
+                  callback_data: "invite",
+                },
+              ],
+
+              [{ text: "Play now!", web_app: { url: web_link } }],
+            ],
+          },
+        }
+      );
     });
 
     bot.command("invite", async (ctx) => {
-      ctx.reply(`Invite is on the way`);
+      ctx.reply(`Share with your friends and earn bonuses for each friend you invite and for their activity:\n\nYour referral link: pending`);
     });
 
     bot.command("socials", async (ctx) => {
@@ -110,11 +129,11 @@ AppDataSource.initialize()
       );
     });
 
-    bot.on(message("web_app_data"), async (ctx) => {
-      const text = ctx.webAppData?.data;
-      ctx.reply(`data from web app ${text}`);
-      console.log(text, "text");
-    });
+    // bot.on(message("web_app_data"), async (ctx) => {
+    //   const text = ctx.webAppData?.data;
+    //   ctx.reply(`data from web app ${text}`);
+    //   console.log(text, "text");
+    // });
 
     // MIDDLEWARE
 
