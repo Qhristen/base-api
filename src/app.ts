@@ -51,9 +51,7 @@ AppDataSource.initialize()
       );
     });
 
-
     bot.action("join", (ctx) => ctx.reply("👍"));
-
 
     bot.command("help", async (ctx) => {
       const message = `
@@ -95,7 +93,9 @@ AppDataSource.initialize()
     });
 
     bot.command("invite", async (ctx) => {
-      ctx.reply(`Share with your friends and earn bonuses for each friend you invite and for their activity:\n\nYour referral link: pending`);
+      ctx.reply(
+        `Share with your friends and earn bonuses for each friend you invite and for their activity:\n\nYour referral link: pending`
+      );
     });
 
     bot.command("socials", async (ctx) => {
@@ -185,6 +185,10 @@ AppDataSource.initialize()
     );
 
     bot.launch();
+
+    // Enable graceful stop
+    process.once("SIGINT", () => bot.stop("SIGINT"));
+    process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
     const port = process.env.PORT;
 
