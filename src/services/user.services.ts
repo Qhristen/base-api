@@ -3,6 +3,7 @@ import { AppDataSource } from "../lib/data-source";
 import { User } from "../entities/user.entity";
 import { Bot } from "../lib/telegram";
 import { rankThresholds } from "../lib/constant";
+import { MoreThan } from "typeorm";
 
 const userRepository = AppDataSource.getRepository(User);
 
@@ -87,7 +88,7 @@ export const updateLastInteraction = async (userId: string) => {
   // Set up a scheduled task to check for inactive users
  export const remindInactiveUsers = async () => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const inactiveUsers = await userRepository.find({ where: { lastInteraction:  twentyFourHoursAgo  } });
+    const inactiveUsers = await userRepository.find({ where: { lastInteraction:  MoreThan(twentyFourHoursAgo)  } });
 
     for (const user of inactiveUsers) {
       try {
