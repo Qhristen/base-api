@@ -32,7 +32,10 @@ export class User extends Model {
   points!: number ;
 
   @Column({ default: 0 })
-  totalPoints!: number;
+  referalPoints!: number ;
+
+  @Column({ default: 0 })
+  socialPoints!: number ;
 
   @Column({ default: 0 })
   friendsReferred!: number;

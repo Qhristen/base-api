@@ -10,6 +10,7 @@ import { User } from "./entities/user.entity";
 import {
   addPoints,
   addReferal,
+  addReferalPoints,
   checkMilestoneRewards,
   createUser,
   findOneReferer,
@@ -19,7 +20,7 @@ import {
   updateLastInteraction,
 } from "./services/user.services";
 import { bot_userName, initialPoint } from "./lib/constant";
-import { CronJob } from 'cron';
+import { CronJob } from "cron";
 
 require("dotenv").config();
 
@@ -56,19 +57,17 @@ AppDataSource.initialize()
       await newUser.save();
 
       let user = await findOneUser(String(userId));
-      console.log(user, "user");
-
-
 
       if (user && !user?.referredBy) {
         await addReferal(user.telegramUserId, referredBy);
         await addPoints(user.telegramUserId, initialPoint);
 
         const referrer = await findOneUser(referredBy);
-        console.log(referrer, "re");
+
         if (referrer && referrer.telegramUserId !== String(userId)) {
-          await updateFriendsRefered(referrer.telegramUserId)
-          await addPoints(referrer.telegramUserId, initialPoint / 2);
+          await updateFriendsRefered(referrer.telegramUserId);
+          const refBounus = initialPoint / 2
+          await addReferalPoints(referrer.telegramUserId, refBounus);
           await checkMilestoneRewards(referredBy);
         }
       }
@@ -127,11 +126,14 @@ AppDataSource.initialize()
 
       await updateLastInteraction(String(userId));
 
+
       if (!user) {
         ctx.reply(`No user found`);
       } else {
+        const allPoints = user?.points + user?.socialPoints + user?.referalPoints
+
         ctx.reply(
-          `@${username} profile\n\n${user?.league}\nTotal score: ${user?.points}\nBalance: ${user?.totalPoints}\n\n/profile for personal stats`,
+          `@${username} profile\n\n${user?.league}\nTotal score: ${user?.points}\nBalance: ${allPoints}\n\n/profile for personal stats`,
           {
             reply_markup: {
               inline_keyboard: [
@@ -243,11 +245,9 @@ AppDataSource.initialize()
       }
     );
 
-    const job = new CronJob('0 * * * *', remindInactiveUsers); // Run every hour
-   
+    const job = new CronJob("0 * * * *", remindInactiveUsers); // Run every hour
 
     bot.launch();
-  
 
     // Enable graceful stop
     process.once("SIGINT", () => bot.stop("SIGINT"));

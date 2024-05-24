@@ -24,7 +24,9 @@ export const findOneReferer = async (id: string) => {
 };
 
 export const checkMilestoneRewards = async (userId: string) => {
-  const user = await userRepository.findOne({ where: {telegramUserId: userId} });
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
   if (!user) return;
 
   const milestones = [
@@ -39,13 +41,20 @@ export const checkMilestoneRewards = async (userId: string) => {
   for (const milestone of milestones) {
     if (user.friendsReferred === milestone.count) {
       await addPoints(userId, milestone.reward);
-      await Bot.telegram.sendMessage(userId, `Congratulations! You have referred ${milestone.count} friends and earned ${milestone.reward / 1000}k points!`);
+      await Bot.telegram.sendMessage(
+        userId,
+        `Congratulations! You have referred ${
+          milestone.count
+        } friends and earned ${milestone.reward / 1000}k points!`
+      );
     }
   }
 };
 
 export const addPoints = async (userId: string, points: number) => {
-  const user = await userRepository.findOne({ where: {telegramUserId: userId} });
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
   if (user) {
     user.points += points;
     await updateRank(user);
@@ -53,23 +62,47 @@ export const addPoints = async (userId: string, points: number) => {
   }
 };
 
+export const addReferalPoints = async (userId: string, points: number) => {
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
+  if (user) {
+    user.referalPoints += points;
+    await updateRank(user);
+    await user.save();
+  }
+};
+
+export const addSocialPoints = async (userId: string, points: number) => {
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
+  if (user) {
+    user.socialPoints += points;
+    await updateRank(user);
+    await user.save();
+  }
+};
+
 export const updateFriendsRefered = async (userId: string) => {
-  const user = await userRepository.findOne({ where: {telegramUserId: userId} });
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
   if (user) {
     user.friendsReferred += 1;
     await user.save();
   }
 };
 
-
 export const addReferal = async (userId: string, referredBy: string) => {
-  const user = await userRepository.findOne({ where: {telegramUserId: userId} });
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
   if (user) {
     user.referredBy = referredBy;
     await user.save();
   }
 };
-
 
 export const updateRank = async (user: User) => {
   for (let i = rankThresholds.length - 1; i >= 0; i--) {
@@ -81,22 +114,32 @@ export const updateRank = async (user: User) => {
 };
 
 export const updateLastInteraction = async (userId: string) => {
-  await userRepository.update({ telegramUserId: userId }, { lastInteraction: new Date() });
+  await userRepository.update(
+    { telegramUserId: userId },
+    { lastInteraction: new Date() }
+  );
 };
 
+// Set up a scheduled task to check for inactive users
+export const remindInactiveUsers = async () => {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const inactiveUsers = await userRepository.find({
+    where: { lastInteraction: MoreThan(twentyFourHoursAgo) },
+  });
 
-  // Set up a scheduled task to check for inactive users
- export const remindInactiveUsers = async () => {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const inactiveUsers = await userRepository.find({ where: { lastInteraction:  MoreThan(twentyFourHoursAgo)  } });
-
-    for (const user of inactiveUsers) {
-      try {
-        await Bot.telegram.sendMessage(user.telegramUserId, 'You have not interacted with the bot for over 24 hours. Please come back and check your points!');
-        user.lastInteraction = new Date();
-        await userRepository.save(user);
-      } catch (error) {
-        console.error(`Failed to send message to user @${user.telegramUserName}:`, error);
-      }
+  for (const user of inactiveUsers) {
+    try {
+      await Bot.telegram.sendMessage(
+        user.telegramUserId,
+        "You have not interacted with the bot for over 24 hours. Please come back and check your points!"
+      );
+      user.lastInteraction = new Date();
+      await userRepository.save(user);
+    } catch (error) {
+      console.error(
+        `Failed to send message to user @${user.telegramUserName}:`,
+        error
+      );
     }
-  };
+  }
+};
