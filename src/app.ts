@@ -58,11 +58,7 @@ AppDataSource.initialize()
       let user = await findOneUser(String(userId));
       console.log(user, "user");
 
-      
-      if (userId === Number(referredBy)) {
-        await ctx.reply("You cannot refer yourself.");
-        return;
-      }
+
 
       if (user && !user?.referredBy) {
         await addReferal(user.telegramUserId, referredBy);
@@ -70,7 +66,7 @@ AppDataSource.initialize()
 
         const referrer = await findOneUser(referredBy);
         console.log(referrer, "re");
-        if (referrer) {
+        if (referrer && referrer.telegramUserId !== String(userId)) {
           await updateFriendsRefered(referrer.telegramUserId)
           await addPoints(referrer.telegramUserId, initialPoint / 2);
           await checkMilestoneRewards(referredBy);
@@ -251,12 +247,12 @@ AppDataSource.initialize()
    
 
     bot.launch();
-    job.start();
+  
 
     // Enable graceful stop
     process.once("SIGINT", () => bot.stop("SIGINT"));
     process.once("SIGTERM", () => bot.stop("SIGTERM"));
-
+    job.start();
     const port = process.env.PORT;
 
     app.listen(port);
