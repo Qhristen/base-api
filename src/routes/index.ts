@@ -1,8 +1,9 @@
 import express from "express";
-import { telegramValidate } from "../controller/telegram-validate";
+import { getCurrentUser, registerUserHandler } from "../controller/user.controller";
 
 const router = express.Router();
 
-router.post("/validate-init", telegramValidate);
+router.post("/user/reg", registerUserHandler);
+router.post("/user/:userId", getCurrentUser);
 
 export default router;
