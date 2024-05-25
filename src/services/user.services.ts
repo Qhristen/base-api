@@ -57,7 +57,7 @@ export const addPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.points += points;
-    await updateRank(user);
+    await updateRank(userId);
     await user.save();
   }
 };
@@ -68,7 +68,7 @@ export const addReferalPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.referalPoints += points;
-    await updateRank(user);
+    await updateRank(userId);
     await user.save();
   }
 };
@@ -79,7 +79,7 @@ export const addSocialPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.socialPoints += points;
-    await updateRank(user);
+    await updateRank(userId);
     await user.save();
   }
 };
@@ -104,11 +104,14 @@ export const addReferal = async (userId: string, referredBy: string) => {
   }
 };
 
-export const updateRank = async (user: User) => {
+export const updateRank = async (id: string) => {
+  const user = await userRepository.findOne({
+    where: { telegramUserId: id },
+  });
   for (let i = rankThresholds.length - 1; i >= 0; i--) {
-    if (user.points >= rankThresholds[i].points) {
+    if (user && user.points >= rankThresholds[i].points) {
       user.league = rankThresholds[i].name.toLocaleUpperCase();
-      break;
+      await user.save();
     }
   }
 };

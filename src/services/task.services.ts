@@ -1,17 +1,27 @@
-import { Request, Response } from "express";
 import { AppDataSource } from "../lib/data-source";
-import { User } from "../entities/user.entity";
+import { Task } from "../entities/task.entity";
+import { User_task } from "../entities/user_task.entity";
 
-const userRepository = AppDataSource.getRepository(User);
+const taskRepository = AppDataSource.getRepository(Task);
+const userTaskRepository = AppDataSource.getRepository(User_task);
 
-export const createUser = async (input: Partial<User>) => {
-  return await userRepository.save(userRepository.create(input));
+export const createNewTask = async (input: Partial<Task>) => {
+  return await taskRepository.save(taskRepository.create(input));
 };
 
-export const updateUserData = async (id: any, data: User) => {
-  return await userRepository.update({ telegramUserId: id }, data);
+export const updateTaskData = async (id: any, data: Task) => {
+  return await taskRepository.update({ id }, data);
 };
 
-export const findOneUser = async (id: string) => {
-  return await userRepository.findOne({ where: { telegramUserId: id } });
+export const findOneTask = async (id: string) => {
+  return await taskRepository.findOne({ where: { id } });
 };
+
+export const findAllTaskByType = async (type: string) => {
+  return await taskRepository.find({ where: { type } });
+};
+
+export const submit_task = async (input: Partial<User_task>) => {
+  return await userTaskRepository.save(userTaskRepository.create(input));
+};
+

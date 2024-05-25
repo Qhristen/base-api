@@ -195,11 +195,11 @@ AppDataSource.initialize()
         }
       );
     });
-
+    
     // MIDDLEWARE
 
     // Body parser
-    // app.use(express.json({ limit: "50mb" }));
+    app.use(express.json({ limit: "50mb" }));
     app.use(express.urlencoded({ extended: false }));
 
     // Logger
@@ -215,6 +215,7 @@ AppDataSource.initialize()
         credentials: true,
       })
     );
+
 
     // ROUTES
     app.use("/api", router);
@@ -245,14 +246,16 @@ AppDataSource.initialize()
       }
     );
 
-    const job = new CronJob("0 * * * *", remindInactiveUsers); // Run every hour
-
+    
     bot.launch();
-
+    
     // Enable graceful stop
     process.once("SIGINT", () => bot.stop("SIGINT"));
     process.once("SIGTERM", () => bot.stop("SIGTERM"));
+
+    const job = new CronJob("0 * * * *", remindInactiveUsers); // Run every hour
     job.start();
+    
     const port = process.env.PORT;
 
     app.listen(port);

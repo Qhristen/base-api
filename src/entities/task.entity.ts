@@ -9,19 +9,17 @@ export enum typeEnum {
 }
 
 @Entity("Tasks")
-export class User extends Model {
+export class Task extends Model {
+
   @Column()
   name: string;
 
   @Column({ default: 0 })
-  points: number;
+  point: number;
 
-  @Column({nullable: true})
-  link: string;
+  @Column("simple-array")
+  activities: string[];
 
-  @Column({
-    type: "enum",
-    enum: typeEnum,
-  })
-  type: typeEnum;
+  @Column()
+  type: string;
 }
