@@ -48,30 +48,34 @@ AppDataSource.initialize()
       const referralLink = `https://t.me/${bot_userName}?start=${userId}`;
 
       let user = await findOneUser(String(userId));
-      if (user) {
-        await updateLastInteraction(String(userId));
 
-        if (user && !user?.referredBy) {
-          await addReferal(user.telegramUserId, referredBy);
-          await addPoints(user.telegramUserId, initialPoint);
-
-          const referrer = await findOneUser(referredBy);
-
-          if (referrer && referrer.telegramUserId !== String(userId)) {
-            await updateFriendsRefered(referrer.telegramUserId);
-            const refBounus = initialPoint / 2;
-            await addReferalPoints(referrer.telegramUserId, refBounus);
-            await checkMilestoneRewards(referredBy);
-          }
-        }
-      } else {
+      if (!user) {
         const newUser = await createUser({
           full_name,
           telegramUserId: String(userId),
           telegramUserName: username,
           referralLink,
+          points: initialPoint
         });
+        
         await newUser.save();
+
+      }
+
+      await updateLastInteraction(String(userId));
+
+      if (user && !user?.referredBy) {
+        await addReferal(user.telegramUserId, referredBy);
+        // await addPoints(user.telegramUserId, initialPoint);
+
+        const referrer = await findOneUser(referredBy);
+
+        if (referrer && referrer.telegramUserId !== String(userId)) {
+          await updateFriendsRefered(referrer.telegramUserId);
+          const refBounus = initialPoint / 2;
+          await addReferalPoints(referrer.telegramUserId, refBounus);
+          await checkMilestoneRewards(referredBy);
+        }
       }
 
       ctx.replyWithPhoto(
