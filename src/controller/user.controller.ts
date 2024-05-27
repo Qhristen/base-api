@@ -60,7 +60,7 @@ export const addUserPoint = async (
   try {
     const { point } = req.body;
     const userId = req.params.userId;
-    const add = await addPoints(userId, point);
+    await addPoints(userId, point);
     res.status(200).json({
       status: "success",
     });

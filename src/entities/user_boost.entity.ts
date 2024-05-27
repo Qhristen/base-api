@@ -2,7 +2,7 @@ import { Entity, Column } from "typeorm";
 import Model from "./model.entity";
 import { Status } from "../lib/constant";
 
-@Entity("User_boosts")
+@Entity("user_boosts")
 export class User_boost extends Model {
 
   @Column()

@@ -8,7 +8,7 @@ export enum typeEnum {
   REF = "REF",
 }
 
-@Entity("Tasks")
+@Entity("tasks")
 export class Task extends Model {
 
   @Column()

@@ -11,7 +11,7 @@ export enum LeagueEnum {
   LEGEND = "LEGEND",
 }
 
-@Entity("Users")
+@Entity("users")
 export class User extends Model {
   @Column()
   full_name: string;

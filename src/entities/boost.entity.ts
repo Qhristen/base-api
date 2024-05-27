@@ -1,7 +1,7 @@
 import { Entity, Column } from "typeorm";
 import Model from "./model.entity";
 
-@Entity("Boosts")
+@Entity("boosts")
 export class Boost extends Model {
 
   @Column()
