@@ -46,30 +46,32 @@ AppDataSource.initialize()
       const userId = ctx.message!.from!.id;
       const full_name = `${ctx.message.from.first_name}`;
       const referralLink = `https://t.me/${bot_userName}?start=${userId}`;
-      await updateLastInteraction(String(userId));
-
-      const newUser = await createUser({
-        full_name,
-        telegramUserId: String(userId),
-        telegramUserName: username,
-        referralLink,
-      });
-      await newUser.save();
 
       let user = await findOneUser(String(userId));
+      if (user) {
+        await updateLastInteraction(String(userId));
 
-      if (user && !user?.referredBy) {
-        await addReferal(user.telegramUserId, referredBy);
-        await addPoints(user.telegramUserId, initialPoint);
+        if (user && !user?.referredBy) {
+          await addReferal(user.telegramUserId, referredBy);
+          await addPoints(user.telegramUserId, initialPoint);
 
-        const referrer = await findOneUser(referredBy);
+          const referrer = await findOneUser(referredBy);
 
-        if (referrer && referrer.telegramUserId !== String(userId)) {
-          await updateFriendsRefered(referrer.telegramUserId);
-          const refBounus = initialPoint / 2
-          await addReferalPoints(referrer.telegramUserId, refBounus);
-          await checkMilestoneRewards(referredBy);
+          if (referrer && referrer.telegramUserId !== String(userId)) {
+            await updateFriendsRefered(referrer.telegramUserId);
+            const refBounus = initialPoint / 2;
+            await addReferalPoints(referrer.telegramUserId, refBounus);
+            await checkMilestoneRewards(referredBy);
+          }
         }
+      } else {
+        const newUser = await createUser({
+          full_name,
+          telegramUserId: String(userId),
+          telegramUserName: username,
+          referralLink,
+        });
+        await newUser.save();
       }
 
       ctx.replyWithPhoto(
@@ -126,11 +128,11 @@ AppDataSource.initialize()
 
       await updateLastInteraction(String(userId));
 
-
       if (!user) {
         ctx.reply(`No user found`);
       } else {
-        const allPoints = user?.points + user?.socialPoints + user?.referalPoints
+        const allPoints =
+          user?.points + user?.socialPoints + user?.referalPoints;
 
         ctx.reply(
           `@${username} profile\n\n${user?.league}\nTotal score: ${user?.points}\nBalance: ${allPoints}\n\n/profile for personal stats`,
@@ -195,7 +197,7 @@ AppDataSource.initialize()
         }
       );
     });
-    
+
     // MIDDLEWARE
 
     // Body parser
@@ -215,7 +217,6 @@ AppDataSource.initialize()
         credentials: true,
       })
     );
-
 
     // ROUTES
     app.use("/api", router);
@@ -246,16 +247,15 @@ AppDataSource.initialize()
       }
     );
 
-    
     bot.launch();
-    
+
     // Enable graceful stop
     process.once("SIGINT", () => bot.stop("SIGINT"));
     process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
     const job = new CronJob("0 * * * *", remindInactiveUsers); // Run every hour
     job.start();
-    
+
     const port = process.env.PORT;
 
     app.listen(port);
