@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { CreateUserInput } from "../schema/user.schema";
-import { addPoints, createUser, findOneUser } from "../services/user.services";
+import { addPoints, baseStats, createUser, findOneUser, updateLastInteraction } from "../services/user.services";
 
 export const registerUserHandler = async (
   req: Request<{}, {}, CreateUserInput>,
@@ -40,7 +40,10 @@ export const getCurrentUser = async (
   next: NextFunction
 ) => {
   try {
-    const user = await findOneUser(req.params.userId);
+    const userId =req.params.userId
+    await updateLastInteraction(String(userId));
+    
+    const user = await findOneUser(userId);
     res.status(200).json({
       status: "success",
       data: {
@@ -63,6 +66,22 @@ export const addUserPoint = async (
     await addPoints(userId, point);
     res.status(200).json({
       status: "success",
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const getStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+   const stats = await baseStats()
+    res.status(200).json({
+      status: "success",
+      stats
     });
   } catch (err: any) {
     next(err);

@@ -3,7 +3,7 @@ import { AppDataSource } from "../lib/data-source";
 import { User } from "../entities/user.entity";
 import { Bot } from "../lib/telegram";
 import { rankThresholds } from "../lib/constant";
-import { MoreThan } from "typeorm";
+import { LessThan, MoreThan } from "typeorm";
 
 const userRepository = AppDataSource.getRepository(User);
 
@@ -101,6 +101,24 @@ export const addReferal = async (userId: string, referredBy: string) => {
   if (user) {
     user.referredBy = referredBy;
     await user.save();
+  }
+};
+export const baseStats = async () => {
+  const totalUsers = await userRepository.count();
+  const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  const onlineUsers = await userRepository.count({ where: { lastInteraction: LessThan(oneHourAgo) } });
+  const dailyUsers = await userRepository.count({ where: { lastInteraction: LessThan(twentyFourHoursAgo) } });
+
+  const allUsers = await userRepository.find();
+    const totalPoints = allUsers.reduce((sum, user) => sum + user.points, 0);
+
+  return {
+    totalUsers,
+    onlineUsers,
+    dailyUsers,
+    totalPoints
   }
 };
 
