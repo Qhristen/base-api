@@ -57,7 +57,7 @@ AppDataSource.initialize()
           referralLink,
           points: initialPoint
         });
-        
+
         await newUser.save();
 
       }
@@ -254,8 +254,8 @@ AppDataSource.initialize()
     bot.launch();
 
     // Enable graceful stop
-    process.once("SIGINT", () => bot.stop("SIGINT"));
-    process.once("SIGTERM", () => bot.stop("SIGTERM"));
+    // process.once("SIGINT", () => bot.stop("SIGINT"));
+    // process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
     const job = new CronJob("0 * * * *", remindInactiveUsers); // Run every hour
     job.start();
