@@ -134,7 +134,7 @@ export const remindInactiveUsers = async () => {
     try {
       await Bot.telegram.sendMessage(
         user.telegramUserId,
-        "You have not interacted with the bot for over 24 hours. Please come back and check your points!"
+        "You have not interacted with the bot for over one hour. Please come back and check your points!"
       );
       user.lastInteraction = new Date();
       await userRepository.save(user);
