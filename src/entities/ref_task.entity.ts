@@ -1,21 +1,15 @@
 import { Entity, Column } from "typeorm";
 import Model from "./model.entity";
 
-@Entity("boosts")
-export class Boost extends Model {
-
+@Entity("ref_tasks")
+export class Ref_Task extends Model {
   @Column()
   name: string;
 
   @Column({ default: 0 })
-  limit!: number;
+  point: number;
 
   @Column({ default: 0 })
-  max!: number;
+  totalInvite: number;
 
-  @Column({ default: 0 })
-  point!: number;
-
-  @Column()
-  type: string;
 }

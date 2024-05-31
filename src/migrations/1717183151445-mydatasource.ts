@@ -1,19 +1,18 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Mydatasource1716611638655 implements MigrationInterface {
-    name = 'Mydatasource1716611638655'
+export class Mydatasource1717183151445 implements MigrationInterface {
+    name = 'Mydatasource1717183151445'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-            ALTER TABLE "Tasks"
-                RENAME COLUMN "links" TO "activities"
+            ALTER TABLE "user_tasks"
+            ADD "name" character varying NOT NULL
         `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-            ALTER TABLE "Tasks"
-                RENAME COLUMN "activities" TO "links"
+            ALTER TABLE "user_tasks" DROP COLUMN "name"
         `);
     }
 

@@ -11,6 +11,12 @@ export class User_boost extends Model {
   @Column()
   userId: string;
 
+  @Column({ default: 0 })
+  point: number;
+
+  @Column()
+  type: string;
+
   @Column({ type: "enum", enum: Status})
   status: string;
 }

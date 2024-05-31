@@ -1,15 +1,8 @@
 import { Entity, Column } from "typeorm";
 import Model from "./model.entity";
 
-export enum typeEnum {
-  SPECIAL = "SPECIAL",
-  OTHER_SPECIAL = "OTHER_SPECIAL",
-  LEAGUE = "LEAGUE",
-  REF = "REF",
-}
-
-@Entity("tasks")
-export class Task extends Model {
+@Entity("special_league")
+export class Special_Task extends Model {
   @Column()
   name: string;
 
@@ -19,6 +12,5 @@ export class Task extends Model {
   @Column('jsonb', { array: false, nullable: true })
   activities: { name: string; link: string }[];
 
-  @Column()
-  type: string;
+
 }

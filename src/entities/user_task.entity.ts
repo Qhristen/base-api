@@ -10,6 +10,15 @@ export class User_task extends Model {
   @Column()
   userId: string;
 
+  @Column()
+  name: string;
+
+  @Column({ default: 0 })
+  point: number;
+
+  @Column()
+  type: string;
+
   @Column({ type: "enum", enum: Status })
   status: string;
 }

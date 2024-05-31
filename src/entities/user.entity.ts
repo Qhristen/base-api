@@ -2,13 +2,13 @@ import { Entity, Column } from "typeorm";
 import Model from "./model.entity";
 
 export enum LeagueEnum {
-  NOVICE = "NOVICE",
-  ROOKIE = "ROOKIE",
-  SENIOR = "SENIOR",
-  ADVANCED = "ADVANCED",
-  EXPERT = "EXPERT",
-  MASTER = "MASTER",
-  LEGEND = "LEGEND",
+  NOVICE = "Novice",
+  ROOKIE = "Rookie",
+  SENIOR = "Senior",
+  ADVANCED = "Advanced",
+  EXPERT = "Expert",
+  MASTER = "Master",
+  LEGEND = "Legend",
 }
 
 @Entity("users")
@@ -29,13 +29,37 @@ export class User extends Model {
   referredBy!: string | null;
 
   @Column({ default: 0 })
-  points!: number ;
+  points!: number;
 
   @Column({ default: 0 })
-  referalPoints!: number ;
+  referalPoints!: number;
 
   @Column({ default: 0 })
-  socialPoints!: number ;
+  socialPoints!: number;
+
+  @Column({ type: "text", default: "idle" })
+  status!: string;
+
+  @Column({ default: 1 })
+  perclick!: number;
+
+  @Column({ default: 500 })
+  limit!: number;
+
+  @Column({ default: 0 })
+  touches!: number;
+
+  @Column({ default: 500 })
+  max!: number;
+
+  @Column({ default: 1 })
+  multiTap!: number;
+
+  @Column({ default: false})
+  fullEnergy!: boolean;
+
+  @Column({ default: false})
+  tapGuru!: boolean;
 
   @Column({ default: 0 })
   friendsReferred!: number;
@@ -44,8 +68,6 @@ export class User extends Model {
   lastInteraction!: Date;
 
   @Column({
-    type: "enum",
-    enum: LeagueEnum,
     default: LeagueEnum.NOVICE,
   })
   league!: string;
