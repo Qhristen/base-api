@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
     ca
   },
   type: "postgres",
-  synchronize: false,
+  synchronize: true,
   logging: false,
   entities: ["src/entities/**/*.entity{.ts,.js}"],
   migrations: ["src/migrations/**/*{.ts,.js}"],
