@@ -8,18 +8,20 @@ import {
 import { CreateBoostInput } from "../schema/boost.schema";
 
 export const createBoost = async (
-  req: Request<{}, {}, CreateBoostInput>,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { name, limit, type } = req.body;
+    const { name, limit, type, max, point } = req.body;
     console.log(req.body, "nwt");
 
     const newTask = await createNewBoost({
       name,
       limit,
       type,
+      max,
+      point
     });
     await newTask.save();
 

@@ -55,11 +55,23 @@ AppDataSource.initialize()
           telegramUserId: String(userId),
           telegramUserName: username,
           referralLink,
-          points: initialPoint
+          points: initialPoint,
+          limit: 500,
+          max: 500,
+          multiTap: 2,
+          tapGuru: {
+            active: false,
+            max: 3,
+            min: 3,
+          },
+          fullEnergy: {
+            active: false,
+            max: 3,
+            min: 3,
+          },
         });
 
         await newUser.save();
-
       }
 
       await updateLastInteraction(String(userId));

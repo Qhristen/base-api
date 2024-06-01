@@ -1,22 +1,29 @@
 import express from "express";
 import {
-    addUserPoint,
-  getCurrentUser,
-  getStats,
-  registerUserHandler,
-} from "../controller/user.controller";
-import {
-  createTask,
-  getAllTaskByType,
-  getSingletask,
-  submitTask,
-} from "../controller/task.controller";
-import {
   createBoost,
   getAllBoostByType,
   getSingleBoost,
   submitBoost,
 } from "../controller/boost.controller";
+import {
+  addLeagueTask,
+  addRefTask,
+  addSpecialTask,
+  getAllLeagueTask,
+  getAllRefTask,
+  getAllSpecialTask,
+  getSingleSpecialTask,
+  submitLeagueTask,
+  submitRefTask,
+  submitSpecialTask
+} from "../controller/task.controller";
+import {
+  addUserPoint,
+  getAllUsers,
+  getCurrentUser,
+  getStats,
+  registerUserHandler,
+} from "../controller/user.controller";
 
 const router = express.Router();
 
@@ -24,12 +31,19 @@ const router = express.Router();
 router.post("/user/reg", registerUserHandler);
 router.get("/user/:userId", getCurrentUser);
 router.post("/user/:userId/add-point", addUserPoint);
+router.get("/users", getAllUsers);
 
 //task routes
-router.post("/task/create", createTask);
-router.get("/task/:taskId", getSingletask);
-router.get("/task/:type/all", getAllTaskByType);
-router.post("/task/submit", submitTask);
+router.post("/task/special/create", addSpecialTask);
+router.post("/task/league/create", addLeagueTask);
+router.post("/task/ref/create", addRefTask);
+router.get("/task/special/:taskId", getSingleSpecialTask);
+router.get("/task/special", getAllSpecialTask);
+router.get("/task/league", getAllLeagueTask);
+router.get("/task/ref", getAllRefTask);
+router.post("/task/special/submit", submitSpecialTask);
+router.post("/task/ref/submit", submitRefTask);
+router.post("/task/league/submit", submitLeagueTask);
 
 //boosts routes
 router.post("/boost/create", createBoost);

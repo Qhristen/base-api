@@ -1,4 +1,4 @@
-import { number, object, string, TypeOf, z } from "zod";
+import { any, number, object, string, TypeOf, z } from "zod";
 
 export const createTaskInput = object({
   body: object({
@@ -8,7 +8,7 @@ export const createTaskInput = object({
     point: number({
       required_error: "Required",
     }),
-    activities: string({
+    activities: any({
       required_error: "Required",
     }).array(),
 

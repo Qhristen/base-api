@@ -23,6 +23,10 @@ export const findOneReferer = async (id: string) => {
   return await userRepository.findOne({ where: { referredBy: id } });
 };
 
+export const findAllUsers = async () => {
+  return await userRepository.find();
+};
+
 export const checkMilestoneRewards = async (userId: string) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
@@ -40,7 +44,7 @@ export const checkMilestoneRewards = async (userId: string) => {
 
   for (const milestone of milestones) {
     if (user.friendsReferred === milestone.count) {
-      await addPoints(userId, milestone.reward);
+      await addPoints(userId, milestone.reward, 0);
       await Bot.telegram.sendMessage(
         userId,
         `Congratulations! You have referred ${
@@ -51,12 +55,17 @@ export const checkMilestoneRewards = async (userId: string) => {
   }
 };
 
-export const addPoints = async (userId: string, points: number) => {
+export const addPoints = async (
+  userId: string,
+  points: number,
+  touch: number
+) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
   if (user) {
     user.points += points;
+    user.touches += touch;
     await updateRank(userId);
     await user.save();
   }
@@ -108,18 +117,25 @@ export const baseStats = async () => {
   const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-  const onlineUsers = await userRepository.count({ where: { lastInteraction: LessThan(oneHourAgo) } });
-  const dailyUsers = await userRepository.count({ where: { lastInteraction: LessThan(twentyFourHoursAgo) } });
+  const onlineUsers = await userRepository.count({
+    where: { lastInteraction: LessThan(oneHourAgo) },
+  });
+  const dailyUsers = await userRepository.count({
+    where: { lastInteraction: LessThan(twentyFourHoursAgo) },
+  });
 
   const allUsers = await userRepository.find();
-    const totalPoints = allUsers.reduce((sum, user) => sum + user.points, 0);
+  const totalPoints = allUsers.reduce((sum, user) => sum + user.points, 0);
+  
+  const totalTouches = allUsers.reduce((sum, user) => sum + user.touches, 0);
 
   return {
     totalUsers,
     onlineUsers,
     dailyUsers,
-    totalPoints
-  }
+    totalPoints,
+    totalTouches
+  };
 };
 
 export const updateRank = async (id: string) => {
@@ -152,7 +168,7 @@ export const remindInactiveUsers = async () => {
     try {
       await Bot.telegram.sendMessage(
         user.telegramUserId,
-        "You have not interacted with the bot for over one hour. Please come back and check your points!"
+        "You have not interacted with the bot for over some hours. Please come back and check your points!"
       );
       user.lastInteraction = new Date();
       await userRepository.save(user);

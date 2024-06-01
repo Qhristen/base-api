@@ -52,14 +52,14 @@ export class User extends Model {
   @Column({ default: 500 })
   max!: number;
 
+  @Column("simple-json", { nullable: true })
+  fullEnergy!: { min: number; max: number; active: boolean };
+
   @Column({ default: 1 })
   multiTap!: number;
 
-  @Column({ default: false})
-  fullEnergy!: boolean;
-
-  @Column({ default: false})
-  tapGuru!: boolean;
+  @Column("simple-json", { nullable: true })
+  tapGuru!: { min: number; max: number; active: boolean };
 
   @Column({ default: 0 })
   friendsReferred!: number;
