@@ -19,7 +19,7 @@ export class User extends Model {
   @Column()
   telegramUserId: string;
 
-  @Column()
+  @Column({ nullable: true })
   telegramUserName: string;
 
   @Column({ nullable: true })
