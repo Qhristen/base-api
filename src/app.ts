@@ -16,6 +16,7 @@ import {
   findOneReferer,
   findOneUser,
   remindInactiveUsers,
+  resetUsersData,
   updateFriendsRefered,
   updateLastInteraction,
 } from "./services/user.services";
@@ -269,8 +270,11 @@ AppDataSource.initialize()
     // process.once("SIGINT", () => bot.stop("SIGINT"));
     // process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
-    const job = new CronJob("0 * * * *", remindInactiveUsers); // Run every hour
-    job.start();
+    const inactiveUsers = new CronJob("0 12 * * *", remindInactiveUsers); // Run every 24 hour
+    const resetUserInfo = new CronJob("0 12 * * *", resetUsersData); // Run every 24 hour
+
+    inactiveUsers.start();
+    resetUserInfo.start();
 
     const port = process.env.PORT;
 

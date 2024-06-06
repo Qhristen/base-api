@@ -12,5 +12,5 @@ export const rankThresholds = [
 
 export enum Status {
   pedning = "pedning",
-  success = "success",
+  success = "completed",
 }

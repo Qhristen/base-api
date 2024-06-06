@@ -71,6 +71,16 @@ export const addPoints = async (
   }
 };
 
+export const removePoints = async (userId: string, points: number) => {
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
+  if (user) {
+    user.points -= points;
+    await user.save();
+  }
+};
+
 export const addReferalPoints = async (userId: string, points: number) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
@@ -126,7 +136,7 @@ export const baseStats = async () => {
 
   const allUsers = await userRepository.find();
   const totalPoints = allUsers.reduce((sum, user) => sum + user.points, 0);
-  
+
   const totalTouches = allUsers.reduce((sum, user) => sum + user.touches, 0);
 
   return {
@@ -134,7 +144,7 @@ export const baseStats = async () => {
     onlineUsers,
     dailyUsers,
     totalPoints,
-    totalTouches
+    totalTouches,
   };
 };
 
@@ -157,18 +167,49 @@ export const updateLastInteraction = async (userId: string) => {
   );
 };
 
+export const updateUser = async (userId: string, data: Partial<User>) => {
+  await userRepository.update({ telegramUserId: userId }, data);
+};
+
+// Set up a scheduled task to check for inactive users
+export const resetUsersData = async () => {
+  const allUsers = await userRepository.find();
+
+  for (const user of allUsers) {
+    try {
+      user.tapGuru = {
+        active: false,
+        max: 3,
+        min: 3,
+      };
+      await userRepository.save(user);
+    } catch (error) {
+      console.error(`Failed to send message`, error);
+    }
+  }
+};
+
 // Set up a scheduled task to check for inactive users
 export const remindInactiveUsers = async () => {
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const inactiveUsers = await userRepository.find({
     where: { lastInteraction: MoreThan(twentyFourHoursAgo) },
   });
+  const web_link = `${process.env.ORIGIN}/welcome`;
+
 
   for (const user of inactiveUsers) {
     try {
       await Bot.telegram.sendMessage(
         user.telegramUserId,
-        "You have not interacted with the bot for over some hours. Please come back and check your points!"
+        "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
+        {
+          reply_markup: {
+            inline_keyboard:[
+              [{ text: "Play now!", web_app: { url: web_link } }],
+            ]
+          }
+        }
       );
       user.lastInteraction = new Date();
       await userRepository.save(user);

@@ -1,5 +1,6 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import Model from "./model.entity";
+import { User_activity } from "./user_activity.entity";
 
 export enum typeEnum {
   SPECIAL = "SPECIAL",
@@ -16,8 +17,8 @@ export class Task extends Model {
   @Column({ default: 0 })
   point: number;
 
-  @Column('jsonb', { array: false, nullable: true })
-  activities: { name: string; link: string }[];
+  @OneToMany(() => User_activity, (activities) => activities)
+  activities: User_activity[]
 
   @Column()
   type: string;

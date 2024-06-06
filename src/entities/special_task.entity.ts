@@ -1,7 +1,8 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany, JoinColumn } from "typeorm";
 import Model from "./model.entity";
+import { Activity } from "./activity.entity";
 
-@Entity("special_league")
+@Entity("special_task")
 export class Special_Task extends Model {
   @Column()
   name: string;
@@ -9,8 +10,12 @@ export class Special_Task extends Model {
   @Column({ default: 0 })
   point: number;
 
-  @Column('jsonb', { array: false, nullable: true })
-  activities: { name: string; link: string }[];
-
+  @OneToMany(() => Activity, (activities) => activities.specialTask, {
+    cascade: true,
+    eager: true,
+    onDelete: "CASCADE",
+  })
+  @JoinColumn()
+  activities: Activity[];
 
 }

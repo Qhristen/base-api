@@ -4,12 +4,16 @@ import { User_task } from "../entities/user_task.entity";
 import { Special_Task } from "../entities/special_task.entity";
 import { League_Task } from "../entities/league_task.entity";
 import { Ref_Task } from "../entities/ref_task.entity";
+import { User_activity } from "../entities/user_activity.entity";
+import { Activity } from "../entities/activity.entity";
 
 const taskRepository = AppDataSource.getRepository(Task);
 const specialTaskRepository = AppDataSource.getRepository(Special_Task);
 const leagueTaskRepository = AppDataSource.getRepository(League_Task);
 const refTaskRepository = AppDataSource.getRepository(Ref_Task);
 const userTaskRepository = AppDataSource.getRepository(User_task);
+const userActivityTaskRepository = AppDataSource.getRepository(User_activity);
+const activityTaskRepository = AppDataSource.getRepository(Activity);
 
 export const createNewTask = async (input: Partial<Task>) => {
   return await taskRepository.save(taskRepository.create(input));
@@ -51,6 +55,13 @@ export const findAllSpecialTask = async () => {
   return await specialTaskRepository.find();
 };
 
+export const findAllUserActivity = async () => {
+  return await userActivityTaskRepository.find();
+};
+export const findOneUserActivity = async (id: string) => {
+  return await userActivityTaskRepository.findOne({ where: { userId: id } });
+};
+
 export const findAllLeagueTask = async () => {
   return await leagueTaskRepository.find();
 };
@@ -58,8 +69,19 @@ export const findAllLeagueTask = async () => {
 export const findAllRefTask = async () => {
   return await refTaskRepository.find();
 };
+export const findAllUserTask = async () => {
+  return await userTaskRepository.find();
+};
 
 export const submit_task = async (input: Partial<User_task>) => {
   return await userTaskRepository.save(userTaskRepository.create(input));
+};
+
+export const submit_activity = async (input: Partial<Activity>) => {
+  return await activityTaskRepository.save(activityTaskRepository.create(input));
+};
+
+export const submit_user_activity = async (input: Partial<User_activity>) => {
+  return await userActivityTaskRepository.save(userActivityTaskRepository.create(input));
 };
 

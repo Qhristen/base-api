@@ -4,19 +4,19 @@ import { Status } from "../lib/constant";
 
 @Entity("user_tasks")
 export class User_task extends Model {
-  @Column()
+  @Column({ nullable: true })
   taskId: string;
 
-  @Column()
+  @Column({ nullable: true })
   userId: string;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
   @Column({ default: 0 })
   point: number;
 
-  @Column()
+  @Column({ nullable: true })
   type: string;
 
   @Column({ type: "enum", enum: Status })

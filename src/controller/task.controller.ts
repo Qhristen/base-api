@@ -8,11 +8,16 @@ import {
   findAllLeagueTask,
   findAllRefTask,
   findAllSpecialTask,
+  findAllUserActivity,
+  findAllUserTask,
   findOneLeagueTask,
   findOneRefTask,
   findOneSpecialTask,
   findOneTask,
+  findOneUserActivity,
+  submit_activity,
   submit_task,
+  submit_user_activity,
 } from "../services/task.services";
 import {
   addPoints,
@@ -20,6 +25,7 @@ import {
   addSocialPoints,
   findOneUser,
 } from "../services/user.services";
+import AppError from "../lib/appError";
 
 export const createTask = async (
   req: Request<{}, {}, CreateTaskInput>,
@@ -159,17 +165,38 @@ export const getSingleSpecialTask = async (
   }
 };
 
+export const getAllUserTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userTask = await findAllUserTask();
+    res.status(200).json({
+      status: "success",
+
+      userTask,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
 export const submitSpecialTask = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { taskId, userId, status, name, point, type } = req.body;
+    const { status, name, point, type } = req.body;
+    const { taskId, userId } = req.params;
     const task = await findOneSpecialTask(taskId);
     const user = await findOneUser(userId);
 
-    if (!task || !user || !type) return;
+    console.log(req.body, "bodu");
+
+    if (!user || !task)
+      return next(new AppError(404, "user or task not found"));
 
     await addSocialPoints(user.telegramUserId, point);
 
@@ -202,7 +229,7 @@ export const submitRefTask = async (
     const task = await findOneRefTask(taskId);
     const user = await findOneUser(userId);
 
-    if (!task || !user || !type) return;
+    if (!user) return next(new AppError(404, "user not found"));
 
     await addReferalPoints(user.telegramUserId, point);
 
@@ -235,7 +262,7 @@ export const submitLeagueTask = async (
     const task = await findOneLeagueTask(taskId);
     const user = await findOneUser(userId);
 
-    if (!task || !user || !type) return;
+    if (!user) return next(new AppError(404, "user not found"));
 
     await addPoints(user.telegramUserId, point, 0);
 
@@ -246,6 +273,32 @@ export const submitLeagueTask = async (
       status,
       point,
       type,
+    });
+    await newTask.save();
+
+    res.status(201).json({
+      status: "success",
+      message: "task submitted",
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const submitUserActivity = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { clicked, activityId } = req.body;
+    const { taskId, userId } = req.params;
+
+    const newTask = await submit_user_activity({
+      taskId,
+      userId,
+      clicked,
+      activityId,
     });
     await newTask.save();
 
@@ -269,6 +322,42 @@ export const getAllSpecialTask = async (
       status: "success",
       data: {
         task,
+      },
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const getAllUserActivity = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const activity = await findAllUserActivity();
+    res.status(200).json({
+      status: "success",
+      data: {
+        activity,
+      },
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const getAllUserActivityById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const activity = await findOneUserActivity(req.params?.userId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        activity,
       },
     });
   } catch (err: any) {
