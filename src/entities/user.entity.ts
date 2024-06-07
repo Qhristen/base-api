@@ -64,6 +64,9 @@ export class User extends Model {
   @Column({ default: 0 })
   friendsReferred!: number;
 
+  @Column({ default: 1 })
+  refillSpeed!: number;
+
   @Column({ nullable: true })
   lastInteraction!: Date;
 

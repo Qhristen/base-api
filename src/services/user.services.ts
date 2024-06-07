@@ -154,7 +154,7 @@ export const updateRank = async (id: string) => {
   });
   for (let i = rankThresholds.length - 1; i >= 0; i--) {
     if (user && user.points >= rankThresholds[i].points) {
-      user.league = rankThresholds[i].name.toLocaleUpperCase();
+      user.league = rankThresholds[i].name.toLocaleLowerCase();
       await user.save();
     }
   }
@@ -172,12 +172,28 @@ export const updateUser = async (userId: string, data: Partial<User>) => {
 };
 
 // Set up a scheduled task to check for inactive users
+export const incrementUserPoints = async () => {
+  const allUsers = await userRepository.find();
+
+  allUsers.forEach(async (user) => {
+    if (user.limit < user.max) {
+      user.limit += user.refillSpeed;
+    }
+  });
+};
+
+// Set up a scheduled task to check for inactive users
 export const resetUsersData = async () => {
   const allUsers = await userRepository.find();
 
   for (const user of allUsers) {
     try {
       user.tapGuru = {
+        active: false,
+        max: 3,
+        min: 3,
+      };
+      user.fullEnergy = {
         active: false,
         max: 3,
         min: 3,
@@ -197,7 +213,6 @@ export const remindInactiveUsers = async () => {
   });
   const web_link = `${process.env.ORIGIN}/welcome`;
 
-
   for (const user of inactiveUsers) {
     try {
       await Bot.telegram.sendMessage(
@@ -205,10 +220,10 @@ export const remindInactiveUsers = async () => {
         "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
         {
           reply_markup: {
-            inline_keyboard:[
+            inline_keyboard: [
               [{ text: "Play now!", web_app: { url: web_link } }],
-            ]
-          }
+            ],
+          },
         }
       );
       user.lastInteraction = new Date();

@@ -26,7 +26,10 @@ import {
   getAllUsers,
   getCurrentUser,
   getStats,
+  getUserBadges,
   registerUserHandler,
+  updateChargeLimit,
+  updateRefillSpeed,
   updateUserFullEnergyBar,
   updateUserLimit,
   updateUserMultitap,
@@ -38,9 +41,9 @@ const router = express.Router();
 //users routes
 router.post("/user/reg", registerUserHandler);
 router.get("/user/:userId", getCurrentUser);
-router.post("/user/update/limit/:userId", updateUserLimit);
 router.post("/user/:userId/add-point", addUserPoint);
 router.get("/users", getAllUsers);
+router.get("/users/badges", getUserBadges);
 
 //task routes
 router.post("/task/special/create", addSpecialTask);
@@ -66,6 +69,9 @@ router.post("/boost/submit", submitBoost);
 router.patch("/user/:userId/tapguru", updateUserTapGuru);
 router.patch("/user/:userId/energy", updateUserFullEnergyBar);
 router.patch("/user/:userId/multitap", updateUserMultitap);
+router.post("/user/update/limit/:userId", updateUserLimit);
+router.post("/user/update/charge-limit/:userId", updateChargeLimit);
+router.post("/user/update/refill-speed/:userId", updateRefillSpeed);
 
 //stats
 router.get("/stats", getStats);

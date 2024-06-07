@@ -10,6 +10,9 @@ import {
   updateLastInteraction,
   updateUser,
 } from "../services/user.services";
+import { rankThresholds } from "../lib/constant";
+
+let userIntervals: { [key: string]: NodeJS.Timeout } = {};
 
 export const registerUserHandler = async (
   req: Request<{}, {}, CreateUserInput>,
@@ -53,10 +56,16 @@ export const getCurrentUser = async (
     await updateLastInteraction(String(userId));
 
     const user = await findOneUser(userId);
+
+    if (!user) return;
+
     res.status(200).json({
       status: "success",
       data: {
-        user,
+        user: {
+          ...user,
+          totalPoint: user?.points + user?.referalPoints + user?.socialPoints,
+        },
       },
     });
   } catch (err: any) {
@@ -91,6 +100,7 @@ export const addUserPoint = async (
     const { point } = req.body;
     const userId = req.params.userId;
     console.log(point);
+
     await addPoints(userId, point, point);
     res.status(200).json({
       status: "success",
@@ -137,8 +147,25 @@ export const updateUserTapGuru = async (
       max,
     };
 
+    const gKey = `${userId}-guru`;
     const updateUser = await user.save();
 
+    if (!userIntervals[gKey]) {
+      if (user.limit < user.max) {
+        userIntervals[gKey] = setInterval(async () => {
+          user.tapGuru = { ...updateUser.tapGuru, active: false };
+          if (user.limit === user.max) {
+            clearInterval(userIntervals[gKey]);
+            delete userIntervals[gKey];
+            console.log(`tap guru`);
+          }
+          await user.save();
+          console.log(`guru limit`);
+        }, 20000);
+      } else {
+        clearInterval(userIntervals[gKey]);
+      }
+    }
     res.status(200).json({
       status: "success",
       user: updateUser,
@@ -162,7 +189,7 @@ export const updateUserMultitap = async (
     if (!user) return;
 
     user.points -= point;
-    user.multiTap += 1;
+    user.perclick += 1;
 
     user.save();
 
@@ -225,9 +252,99 @@ export const updateUserLimit = async (
 
     const updatedUser = await user.save();
 
+    if (!userIntervals[userId]) {
+      if (user.limit < user.max) {
+        userIntervals[userId] = setInterval(async () => {
+          user.limit += 1;
+
+          if (user.limit === user.max) {
+            clearInterval(userIntervals[userId]);
+            delete userIntervals[userId];
+            console.log(`User ${userId} reached max points: ${user.limit}`);
+          }
+          await user.save();
+          console.log(`User ${userId} points: ${user.limit}`);
+        }, 1000);
+      } else {
+        clearInterval(userIntervals[userId]);
+      }
+    }
+
     res.status(200).json({
       status: "success",
       user: updatedUser,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const updateChargeLimit = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log(req.body);
+    const { point, limit } = req.body;
+    const { userId } = req.params;
+
+    const user = await findOneUser(userId);
+
+    if (!user) return;
+
+    user.points -= point;
+    user.limit = limit;
+    user.max = limit;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      status: "success",
+      user: updatedUser,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const updateRefillSpeed = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log(req.body);
+    const { point, speed } = req.body;
+    const { userId } = req.params;
+
+    const user = await findOneUser(userId);
+
+    if (!user) return;
+
+    user.points -= point;
+    user.refillSpeed = speed;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      status: "success",
+      user: updatedUser,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const getUserBadges = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    res.status(200).json({
+      status: "success",
+      badges: rankThresholds,
     });
   } catch (err: any) {
     next(err);

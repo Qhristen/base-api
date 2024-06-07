@@ -15,12 +15,17 @@ import {
   createUser,
   findOneReferer,
   findOneUser,
+  incrementUserPoints,
   remindInactiveUsers,
   resetUsersData,
   updateFriendsRefered,
   updateLastInteraction,
 } from "./services/user.services";
-import { bot_userName, initialPoint } from "./lib/constant";
+import {
+  bot_userName,
+  initialPoint,
+  premiumUserReferalBonus,
+} from "./lib/constant";
 import { CronJob } from "cron";
 
 require("dotenv").config();
@@ -45,6 +50,7 @@ AppDataSource.initialize()
       const referredBy = ctx.message.text.split(" ")[1];
 
       const userId = ctx.message!.from!.id;
+      const isUserPremium = ctx.message!.from!.is_premium;
       const full_name = `${ctx.message.from.first_name}`;
       const referralLink = `https://t.me/${bot_userName}?start=${userId}`;
 
@@ -60,6 +66,7 @@ AppDataSource.initialize()
           limit: 500,
           max: 500,
           multiTap: 2,
+          refillSpeed: 1,
           tapGuru: {
             active: false,
             max: 3,
@@ -81,12 +88,20 @@ AppDataSource.initialize()
         await addReferal(user.telegramUserId, referredBy);
         // await addPoints(user.telegramUserId, initialPoint);
 
+        
         const referrer = await findOneUser(referredBy);
 
         if (referrer && referrer.telegramUserId !== String(userId)) {
+          if (isUserPremium) {
+            await addReferalPoints(
+              referrer.telegramUserId,
+              premiumUserReferalBonus
+            );
+          } else {
+            const refBounus = initialPoint / 2;
+            await addReferalPoints(referrer.telegramUserId, refBounus);
+          }
           await updateFriendsRefered(referrer.telegramUserId);
-          const refBounus = initialPoint / 2;
-          await addReferalPoints(referrer.telegramUserId, refBounus);
           await checkMilestoneRewards(referredBy);
         }
       }
@@ -272,9 +287,18 @@ AppDataSource.initialize()
 
     const inactiveUsers = new CronJob("0 12 * * *", remindInactiveUsers); // Run every 24 hour
     const resetUserInfo = new CronJob("0 12 * * *", resetUsersData); // Run every 24 hour
+    const incrementUserPointJob = new CronJob(
+      "* * * * * *",
+      incrementUserPoints
+    ); // Run every second
+
+    const jobEvery12Hours = new CronJob("0 */12 * * *", () => {
+      console.log("Running every 12 hours:", new Date());
+    }); // Cron job that runs every 12 hours
 
     inactiveUsers.start();
     resetUserInfo.start();
+    incrementUserPointJob.start();
 
     const port = process.env.PORT;
 

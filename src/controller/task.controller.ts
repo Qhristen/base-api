@@ -213,6 +213,7 @@ export const submitSpecialTask = async (
     res.status(201).json({
       status: "success",
       message: "task submitted",
+      user
     });
   } catch (err: any) {
     next(err);
