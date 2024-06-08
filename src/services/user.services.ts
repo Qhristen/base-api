@@ -1,9 +1,8 @@
-import { Request, Response } from "express";
-import { AppDataSource } from "../lib/data-source";
-import { User } from "../entities/user.entity";
-import { Bot } from "../lib/telegram";
-import { rankThresholds } from "../lib/constant";
 import { LessThan, MoreThan } from "typeorm";
+import { User } from "../entities/user.entity";
+import { rankThresholds } from "../lib/constant";
+import { AppDataSource } from "../lib/data-source";
+import { Bot } from "../lib/telegram";
 
 const userRepository = AppDataSource.getRepository(User);
 
@@ -66,6 +65,7 @@ export const addPoints = async (
   if (user) {
     user.points += points;
     user.touches += touch;
+    user.totalPoint += points
     await updateRank(userId);
     await user.save();
   }
@@ -76,7 +76,7 @@ export const removePoints = async (userId: string, points: number) => {
     where: { telegramUserId: userId },
   });
   if (user) {
-    user.points -= points;
+    user.totalPoint -= points;
     await user.save();
   }
 };
@@ -87,6 +87,7 @@ export const addReferalPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.referalPoints += points;
+    user.totalPoint += points
     await updateRank(userId);
     await user.save();
   }
@@ -98,6 +99,7 @@ export const addSocialPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.socialPoints += points;
+    user.totalPoint += points
     await updateRank(userId);
     await user.save();
   }
@@ -226,7 +228,7 @@ export const remindInactiveUsers = async () => {
           },
         }
       );
-      user.lastInteraction = new Date();
+      // user.lastInteraction = new Date();
       await userRepository.save(user);
     } catch (error) {
       console.error(

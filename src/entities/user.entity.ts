@@ -33,6 +33,10 @@ export class User extends Model {
 
   @Column({ default: 0 })
   referalPoints!: number;
+  
+  @Column({ default: 0 })
+  totalPoint!: number;
+
 
   @Column({ default: 0 })
   socialPoints!: number;

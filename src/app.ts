@@ -62,7 +62,7 @@ AppDataSource.initialize()
           telegramUserId: String(userId),
           telegramUserName: username,
           referralLink,
-          points: initialPoint,
+          totalPoint: initialPoint,
           limit: 500,
           max: 500,
           multiTap: 2,

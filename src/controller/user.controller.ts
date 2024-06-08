@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { rankThresholds } from "../lib/constant";
 import { CreateUserInput } from "../schema/user.schema";
 import {
   addPoints,
@@ -6,11 +7,9 @@ import {
   createUser,
   findAllUsers,
   findOneUser,
-  removePoints,
-  updateLastInteraction,
-  updateUser,
+  updateLastInteraction
 } from "../services/user.services";
-import { rankThresholds } from "../lib/constant";
+import AppError from "../lib/appError";
 
 let userIntervals: { [key: string]: NodeJS.Timeout } = {};
 
@@ -62,10 +61,7 @@ export const getCurrentUser = async (
     res.status(200).json({
       status: "success",
       data: {
-        user: {
-          ...user,
-          totalPoint: user?.points + user?.referalPoints + user?.socialPoints,
-        },
+        user
       },
     });
   } catch (err: any) {
@@ -137,38 +133,17 @@ export const updateUserTapGuru = async (
     const { userId } = req.params;
 
     const user = await findOneUser(userId);
-    console.log(req.body);
 
     if (!user) return;
 
-    user.tapGuru = {
-      min,
-      active,
-      max,
-    };
+    user.tapGuru = { min: min - 1, active, max };
+    await updateLastInteraction(String(userId));
 
-    const gKey = `${userId}-guru`;
-    const updateUser = await user.save();
-
-    if (!userIntervals[gKey]) {
-      if (user.limit < user.max) {
-        userIntervals[gKey] = setInterval(async () => {
-          user.tapGuru = { ...updateUser.tapGuru, active: false };
-          if (user.limit === user.max) {
-            clearInterval(userIntervals[gKey]);
-            delete userIntervals[gKey];
-            console.log(`tap guru`);
-          }
-          await user.save();
-          console.log(`guru limit`);
-        }, 20000);
-      } else {
-        clearInterval(userIntervals[gKey]);
-      }
-    }
+    const updatedUser = await user.save();
+    
     res.status(200).json({
       status: "success",
-      user: updateUser,
+      user: updatedUser,
     });
   } catch (err: any) {
     next(err);
@@ -188,8 +163,9 @@ export const updateUserMultitap = async (
 
     if (!user) return;
 
-    user.points -= point;
+    user.totalPoint -= point;
     user.perclick += 1;
+    await updateLastInteraction(String(userId));
 
     user.save();
 
@@ -222,6 +198,7 @@ export const updateUserFullEnergyBar = async (
       active,
       max,
     };
+    await updateLastInteraction(String(userId));
 
     const updatedUser = await user.save();
 
@@ -251,6 +228,7 @@ export const updateUserLimit = async (
     user.max = max;
 
     const updatedUser = await user.save();
+    await updateLastInteraction(String(userId));
 
     if (!userIntervals[userId]) {
       if (user.limit < user.max) {
@@ -288,15 +266,21 @@ export const updateChargeLimit = async (
     console.log(req.body);
     const { point, limit } = req.body;
     const { userId } = req.params;
-
+    
+    await updateLastInteraction(String(userId));
     const user = await findOneUser(userId);
 
     if (!user) return;
 
-    user.points -= point;
+    if(user.totalPoint < point){
+      return next(new AppError(500, "you do not have a enough point to purchase charge limit"));
+
+    }
+
+    user.totalPoint -= point;
     user.limit = limit;
     user.max = limit;
-
+    
     const updatedUser = await user.save();
 
     res.status(200).json({
@@ -322,10 +306,11 @@ export const updateRefillSpeed = async (
 
     if (!user) return;
 
-    user.points -= point;
+    user.totalPoint -= point;
     user.refillSpeed = speed;
 
     const updatedUser = await user.save();
+    await updateLastInteraction(String(userId));
 
     res.status(200).json({
       status: "success",
