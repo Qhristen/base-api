@@ -137,7 +137,7 @@ export const baseStats = async () => {
   });
 
   const allUsers = await userRepository.find();
-  const totalPoints = allUsers.reduce((sum, user) => sum + user.points, 0);
+  const totalPoints = allUsers.reduce((sum, user) => sum + user.totalPoint, 0);
 
   const totalTouches = allUsers.reduce((sum, user) => sum + user.touches, 0);
 
