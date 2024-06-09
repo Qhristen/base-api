@@ -62,6 +62,15 @@ export class User extends Model {
   @Column({ default: 1 })
   multiTap!: number;
 
+  @Column({ default: 500 })
+  multiTapPoint!: number;
+
+  @Column({ default: 1 })
+  multiTapLevel!: number;
+
+  @Column({ default: 1 })
+  chargeLevel!: number;
+
   @Column("simple-json", { nullable: true })
   tapGuru!: { min: number; max: number; active: boolean };
 
@@ -70,6 +79,12 @@ export class User extends Model {
 
   @Column({ default: 1 })
   refillSpeed!: number;
+
+  @Column({ default: 1 })
+  refillLevel!: number;
+
+  @Column({ default: 2500 })
+  refillPoint!: number;
 
   @Column({ nullable: true })
   lastInteraction!: Date;

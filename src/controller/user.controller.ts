@@ -7,7 +7,7 @@ import {
   createUser,
   findAllUsers,
   findOneUser,
-  updateLastInteraction
+  updateLastInteraction,
 } from "../services/user.services";
 import AppError from "../lib/appError";
 
@@ -61,7 +61,7 @@ export const getCurrentUser = async (
     res.status(200).json({
       status: "success",
       data: {
-        user
+        user,
       },
     });
   } catch (err: any) {
@@ -140,7 +140,7 @@ export const updateUserTapGuru = async (
     await updateLastInteraction(String(userId));
 
     const updatedUser = await user.save();
-    
+
     res.status(200).json({
       status: "success",
       user: updatedUser,
@@ -165,6 +165,8 @@ export const updateUserMultitap = async (
 
     user.totalPoint -= point;
     user.perclick += 1;
+    user.multiTapLevel += user.multiTapLevel;
+    user.multiTapPoint = user.multiTapPoint * 2 + user.multiTapPoint / 2;
     await updateLastInteraction(String(userId));
 
     user.save();
@@ -266,21 +268,26 @@ export const updateChargeLimit = async (
     console.log(req.body);
     const { point, limit } = req.body;
     const { userId } = req.params;
-    
+
     await updateLastInteraction(String(userId));
     const user = await findOneUser(userId);
 
     if (!user) return;
 
-    if(user.totalPoint < point){
-      return next(new AppError(500, "you do not have a enough point to purchase charge limit"));
-
+    if (user.totalPoint < point) {
+      return next(
+        new AppError(
+          500,
+          "you do not have a enough point to purchase charge limit"
+        )
+      );
     }
 
-    user.totalPoint -= point;
+    user.totalPoint -= point * 2 + point / 2;
     user.limit = limit;
     user.max = limit;
-    
+    user.chargeLevel += 1;
+
     const updatedUser = await user.save();
 
     res.status(200).json({
@@ -308,6 +315,8 @@ export const updateRefillSpeed = async (
 
     user.totalPoint -= point;
     user.refillSpeed = speed;
+    user.refillLevel += 1;
+    user.refillPoint += user.refillPoint * 2 + user.refillPoint / 2;
 
     const updatedUser = await user.save();
     await updateLastInteraction(String(userId));

@@ -66,7 +66,12 @@ AppDataSource.initialize()
           limit: 500,
           max: 500,
           multiTap: 2,
+          multiTapPoint: 500,
+          multiTapLevel: 1,
           refillSpeed: 1,
+          refillLevel: 1,
+          chargeLevel: 1,
+          refillPoint: 2500,
           tapGuru: {
             active: false,
             max: 3,
@@ -163,11 +168,9 @@ AppDataSource.initialize()
       if (!user) {
         ctx.reply(`No user found`);
       } else {
-        const allPoints =
-          user?.points + user?.socialPoints + user?.referalPoints;
 
         ctx.reply(
-          `@${username} profile\n\n${user?.league}\nTotal score: ${user?.points}\nBalance: ${allPoints}\n\n/profile for personal stats`,
+          `@${username} profile\n\n${user?.league}\nTotal score: ${user?.points}\nBalance: ${user.totalPoint}\n\n/profile for personal stats`,
           {
             reply_markup: {
               inline_keyboard: [
@@ -229,8 +232,6 @@ AppDataSource.initialize()
         }
       );
     });
-
-    // MIDDLEWARE
 
     // Body parser
     app.use(express.json({ limit: "50mb" }));
