@@ -165,15 +165,18 @@ export const updateUserMultitap = async (
 
     user.totalPoint -= point;
     user.perclick += 1;
-    user.multiTapLevel += user.multiTapLevel;
-    user.multiTapPoint = user.multiTapPoint * 2 + user.multiTapPoint / 2;
+    user.multiTapLevel += 1;
+    user.multiTapPoint = Math.round(
+      user.multiTapPoint * 2 + user.multiTapPoint / 2
+    );
+
     await updateLastInteraction(String(userId));
 
-    user.save();
+    const updatedUser = await user.save();
 
     res.status(200).json({
       status: "success",
-      user,
+      user: updatedUser,
     });
   } catch (err: any) {
     next(err);
@@ -283,7 +286,7 @@ export const updateChargeLimit = async (
       );
     }
 
-    user.totalPoint -= point * 2 + point / 2;
+    user.totalPoint -= Math.round(point * 2 + point / 2);
     user.limit = limit;
     user.max = limit;
     user.chargeLevel += 1;
@@ -316,7 +319,7 @@ export const updateRefillSpeed = async (
     user.totalPoint -= point;
     user.refillSpeed = speed;
     user.refillLevel += 1;
-    user.refillPoint += user.refillPoint * 2 + user.refillPoint / 2;
+    user.refillPoint += Math.round(user.refillPoint * 2 + user.refillPoint / 2);
 
     const updatedUser = await user.save();
     await updateLastInteraction(String(userId));
