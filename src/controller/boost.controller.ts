@@ -6,6 +6,8 @@ import {
   submit_boost,
 } from "../services/boost.services";
 import { CreateBoostInput } from "../schema/boost.schema";
+import { findOneUser } from "../services/user.services";
+import { startCronJob } from "../lib/auto_bot_cron_jobs";
 
 export const createBoost = async (
   req: Request,
@@ -21,7 +23,7 @@ export const createBoost = async (
       limit,
       type,
       max,
-      point
+      point,
     });
     await newTask.save();
 
@@ -89,6 +91,64 @@ export const submitBoost = async (
     res.status(201).json({
       status: "success",
       message: "task submitted",
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const buyAutoBot = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { point } = req.body;
+
+    const user = await findOneUser(req.params.userId);
+    if (!user) return;
+
+    user.totalPoint -= point;
+    user.autobot = true;
+
+    await user.save();
+
+    startCronJob();
+    
+    res.status(200).json({
+      status: "success",
+      data: {
+        user,
+      },
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const claimAutoBotPoints = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { point } = req.body;
+
+    const user = await findOneUser(req.params.userId);
+    if (!user) return;
+
+    user.totalPoint += point;
+    user.autoBotpoints = 0
+
+    await user.save();
+
+    startCronJob();
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user,
+      },
     });
   } catch (err: any) {
     next(err);

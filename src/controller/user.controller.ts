@@ -7,6 +7,7 @@ import {
   createUser,
   findAllUsers,
   findOneUser,
+  findUserReferers,
   updateLastInteraction,
 } from "../services/user.services";
 import AppError from "../lib/appError";
@@ -80,6 +81,24 @@ export const getAllUsers = async (
       status: "success",
       data: {
         users,
+      },
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const getAllUsersRferrals = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const referals = await findUserReferers(req.params.userId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        referals,
       },
     });
   } catch (err: any) {
@@ -234,24 +253,6 @@ export const updateUserLimit = async (
 
     const updatedUser = await user.save();
     await updateLastInteraction(String(userId));
-
-    if (!userIntervals[userId]) {
-      if (user.limit < user.max) {
-        userIntervals[userId] = setInterval(async () => {
-          user.limit += 1;
-
-          if (user.limit === user.max) {
-            clearInterval(userIntervals[userId]);
-            delete userIntervals[userId];
-            console.log(`User ${userId} reached max points: ${user.limit}`);
-          }
-          await user.save();
-          console.log(`User ${userId} points: ${user.limit}`);
-        }, 1000);
-      } else {
-        clearInterval(userIntervals[userId]);
-      }
-    }
 
     res.status(200).json({
       status: "success",

@@ -174,7 +174,6 @@ export const getAllUserTask = async (
     const userTask = await findAllUserTask();
     res.status(200).json({
       status: "success",
-
       userTask,
     });
   } catch (err: any) {

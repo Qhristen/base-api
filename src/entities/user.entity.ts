@@ -32,6 +32,12 @@ export class User extends Model {
   points!: number;
 
   @Column({ default: 0 })
+  autoBotpoints!: number;
+
+  @Column({ default: false })
+  autobot!: boolean;
+
+  @Column({ default: 0 })
   referalPoints!: number;
   
   @Column({ default: 0 })

@@ -1,32 +1,29 @@
-import express, { NextFunction, Request, Response } from "express";
-import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import router from "./routes";
-import { AppDataSource } from "./lib/data-source";
-import { Bot } from "./lib/telegram";
+import { CronJob } from "cron";
+import express, { NextFunction, Request, Response } from "express";
+import morgan from "morgan";
 import AppError from "./lib/appError";
-import { User } from "./entities/user.entity";
-import {
-  addPoints,
-  addReferal,
-  addReferalPoints,
-  checkMilestoneRewards,
-  createUser,
-  findOneReferer,
-  findOneUser,
-  incrementUserPoints,
-  remindInactiveUsers,
-  resetUsersData,
-  updateFriendsRefered,
-  updateLastInteraction,
-} from "./services/user.services";
 import {
   bot_userName,
   initialPoint,
   premiumUserReferalBonus,
 } from "./lib/constant";
-import { CronJob } from "cron";
+import { AppDataSource } from "./lib/data-source";
+import { Bot } from "./lib/telegram";
+import router from "./routes";
+import {
+  addReferal,
+  addReferalPoints,
+  checkMilestoneRewards,
+  createUser,
+  findOneUser,
+  incrementUserPoints,
+  remindInactiveUsers,
+  resetUsersData,
+  updateFriendsRefered,
+  updateLastInteraction
+} from "./services/user.services";
 
 require("dotenv").config();
 
@@ -55,6 +52,7 @@ AppDataSource.initialize()
       const referralLink = `https://t.me/${bot_userName}?start=${userId}`;
 
       let user = await findOneUser(String(userId));
+      let referredByUser = await findOneUser(String(referredBy));
 
       if (!user) {
         const newUser = await createUser({
@@ -90,24 +88,23 @@ AppDataSource.initialize()
       await updateLastInteraction(String(userId));
 
       if (user && !user?.referredBy) {
-        await addReferal(user.telegramUserId, referredBy);
         // await addPoints(user.telegramUserId, initialPoint);
 
-        
         const referrer = await findOneUser(referredBy);
+        const refBounus = initialPoint / 2;
 
         if (referrer && referrer.telegramUserId !== String(userId)) {
+          await addReferal(user.telegramUserId, referredBy, refBounus);
+          await updateFriendsRefered(referrer.telegramUserId);
+          await checkMilestoneRewards(referredBy);
           if (isUserPremium) {
             await addReferalPoints(
               referrer.telegramUserId,
               premiumUserReferalBonus
             );
           } else {
-            const refBounus = initialPoint / 2;
             await addReferalPoints(referrer.telegramUserId, refBounus);
           }
-          await updateFriendsRefered(referrer.telegramUserId);
-          await checkMilestoneRewards(referredBy);
         }
       }
 
@@ -168,7 +165,6 @@ AppDataSource.initialize()
       if (!user) {
         ctx.reply(`No user found`);
       } else {
-
         ctx.reply(
           `@${username} profile\n\n${user?.league}\nTotal score: ${user?.points}\nBalance: ${user.totalPoint}\n\n/profile for personal stats`,
           {
@@ -292,10 +288,6 @@ AppDataSource.initialize()
       "* * * * * *",
       incrementUserPoints
     ); // Run every second
-
-    const jobEvery12Hours = new CronJob("0 */12 * * *", () => {
-      console.log("Running every 12 hours:", new Date());
-    }); // Cron job that runs every 12 hours
 
     inactiveUsers.start();
     resetUserInfo.start();

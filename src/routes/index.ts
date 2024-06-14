@@ -1,5 +1,7 @@
 import express from "express";
 import {
+  buyAutoBot,
+  claimAutoBotPoints,
   createBoost,
   getAllBoostByType,
   getSingleBoost,
@@ -24,6 +26,7 @@ import {
 import {
   addUserPoint,
   getAllUsers,
+  getAllUsersRferrals,
   getCurrentUser,
   getStats,
   getUserBadges,
@@ -44,6 +47,7 @@ router.get("/user/:userId", getCurrentUser);
 router.post("/user/:userId/add-point", addUserPoint);
 router.get("/users", getAllUsers);
 router.get("/users/badges", getUserBadges);
+router.get("/user/referals/:userId", getAllUsersRferrals);
 
 //task routes
 router.post("/task/special/create", addSpecialTask);
@@ -72,6 +76,8 @@ router.patch("/user/:userId/multitap", updateUserMultitap);
 router.post("/user/update/limit/:userId", updateUserLimit);
 router.post("/user/update/charge-limit/:userId", updateChargeLimit);
 router.post("/user/update/refill-speed/:userId", updateRefillSpeed);
+router.post("/user/buy-auto-bot/:userId", buyAutoBot);
+router.post("/user/claim/auto-bot-point/:userId", claimAutoBotPoints);
 
 //stats
 router.get("/stats", getStats);

@@ -3,11 +3,17 @@ import { User } from "../entities/user.entity";
 import { rankThresholds } from "../lib/constant";
 import { AppDataSource } from "../lib/data-source";
 import { Bot } from "../lib/telegram";
+import { User_Referal } from "../entities/user_referral.entity";
 
 const userRepository = AppDataSource.getRepository(User);
+const referalRepository = AppDataSource.getRepository(User_Referal);
 
 export const createUser = async (input: Partial<User>) => {
   return await userRepository.save(userRepository.create(input));
+};
+
+export const creatReferral = async (input: Partial<User_Referal>) => {
+  return await referalRepository.save(referalRepository.create(input));
 };
 
 export const updateUserData = async (id: any, data: User) => {
@@ -22,6 +28,10 @@ export const findOneReferer = async (id: string) => {
   return await userRepository.findOne({ where: { referredBy: id } });
 };
 
+export const findUserReferers = async (id: string) => {
+  return await referalRepository.find({ where: { referredToId: id } });
+};
+
 export const findAllUsers = async () => {
   return await userRepository.find();
 };
@@ -33,12 +43,15 @@ export const checkMilestoneRewards = async (userId: string) => {
   if (!user) return;
 
   const milestones = [
-    { count: 5, reward: 30000 },
-    { count: 10, reward: 100000 },
+    { count: 5, reward: 50000 },
+    { count: 10, reward: 200000 },
     { count: 25, reward: 250000 },
     { count: 50, reward: 300000 },
     { count: 100, reward: 500000 },
-    { count: 500, reward: 2000000 },
+    { count: 500, reward: 2500000 },
+    { count: 1000, reward: 3500000 },
+    { count: 10000, reward: 12000000 },
+    { count: 50000, reward: 120000000 },
   ];
 
   for (const milestone of milestones) {
@@ -65,7 +78,7 @@ export const addPoints = async (
   if (user) {
     user.points += points;
     user.touches += touch;
-    user.totalPoint += points
+    user.totalPoint += points;
     await updateRank(userId);
     await user.save();
   }
@@ -87,7 +100,7 @@ export const addReferalPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.referalPoints += points;
-    user.totalPoint += points
+    user.totalPoint += points;
     await updateRank(userId);
     await user.save();
   }
@@ -99,7 +112,7 @@ export const addSocialPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.socialPoints += points;
-    user.totalPoint += points
+    user.totalPoint += points;
     await updateRank(userId);
     await user.save();
   }
@@ -115,14 +128,23 @@ export const updateFriendsRefered = async (userId: string) => {
   }
 };
 
-export const addReferal = async (userId: string, referredBy: string) => {
+export const addReferal = async (
+  userId: string,
+  referredBy: string,
+  point: number
+) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
-  if (user) {
-    user.referredBy = referredBy;
-    await user.save();
-  }
+  if (!user) return;
+  user.referredBy = referredBy;
+
+  await creatReferral({
+    referredFromId: referredBy,
+    referredToId: userId,
+    point,
+  });
+  await user.save();
 };
 export const baseStats = async () => {
   const totalUsers = await userRepository.count();
@@ -180,8 +202,20 @@ export const incrementUserPoints = async () => {
   allUsers.forEach(async (user) => {
     if (user.limit < user.max) {
       user.limit += user.refillSpeed;
+      await user.save()
     }
   });
+};
+
+// Set up a scheduled task to check for inactive users
+export const incrementAutobot = async () => {
+  const allUsers = await userRepository.find();
+  allUsers
+    .filter((user) => user.autobot === true)
+    .forEach(async (user) => { 
+      user.autoBotpoints += 1;
+      await user.save()
+    });
 };
 
 // Set up a scheduled task to check for inactive users
@@ -200,7 +234,7 @@ export const resetUsersData = async () => {
         max: 3,
         min: 3,
       };
-      await userRepository.save(user);
+     await user.save()
     } catch (error) {
       console.error(`Failed to send message`, error);
     }
@@ -228,8 +262,8 @@ export const remindInactiveUsers = async () => {
           },
         }
       );
-      // user.lastInteraction = new Date();
-      await userRepository.save(user);
+      user.lastInteraction = new Date();
+      await user.save()
     } catch (error) {
       console.error(
         `Failed to send message to user @${user.telegramUserName}:`,
