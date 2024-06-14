@@ -29,7 +29,7 @@ export const findOneReferer = async (id: string) => {
 };
 
 export const findUserReferers = async (id: string) => {
-  return await referalRepository.find({ where: { referredToId: id } });
+  return await referalRepository.find({ where: { referredFromId: id } });
 };
 
 export const findAllUsers = async () => {
@@ -138,14 +138,18 @@ export const addReferal = async (
   });
   if (!user) return;
   user.referredBy = referredBy;
-
-  await creatReferral({
-    referredFromId: referredBy,
-    referredToId: userId,
-    point,
-  });
+  user.referalPoints += point;
+  user.totalPoint += point;
+  // const CreatReferal = await creatReferral({
+  //   referredFromId: userId,
+  //   referredToId: referredBy,
+  //   point
+  // })
   await user.save();
+  // await CreatReferal.save()
 };
+
+
 export const baseStats = async () => {
   const totalUsers = await userRepository.count();
   const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);

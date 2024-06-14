@@ -8,13 +8,13 @@ const JOB_DURATION = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 
 export function startCronJob(): void {
     if (job) {
-        console.log('Auto bot Cron job is already running.');
+        // console.log('Auto bot Cron job is already running.');
         return;
     }
 
     jobStartTime = Date.now();
     job = new CronJob('* * * * * *', async () => {
-        console.log('Auto bot Cron job running every second.');
+        // console.log('Auto bot Cron job running every second.');
         await incrementAutobot()
 
         // Check if 24 hours have passed

@@ -1,8 +1,8 @@
-import { Column, Entity, JoinColumn, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import Model from "./model.entity";
 import { User } from "./user.entity";
 
-@Entity("user_referral")
+@Entity("user_referrals")
 export class User_Referal extends Model {
   @OneToMany(() => User, (user) => user)
   @JoinColumn()
@@ -11,7 +11,7 @@ export class User_Referal extends Model {
   @Column({ default: null })
   referredFromId: string;
 
-  @OneToMany(() => User, (user) => user)
+  @ManyToOne(() => User, (user) => user.referrals, {eager: true,cascade: true, onDelete: "CASCADE"})
   @JoinColumn()
   referredTo!: User;
 

@@ -1,5 +1,6 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany, JoinColumn } from "typeorm";
 import Model from "./model.entity";
+import { User_Referal } from "./user_referral.entity";
 
 export enum LeagueEnum {
   NOVICE = "Novice",
@@ -43,6 +44,9 @@ export class User extends Model {
   @Column({ default: 0 })
   totalPoint!: number;
 
+  @OneToMany(() => User_Referal, (referral) => referral.referredTo)
+  @JoinColumn()
+  referrals!: User_Referal[];
 
   @Column({ default: 0 })
   socialPoints!: number;
