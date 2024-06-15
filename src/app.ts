@@ -81,15 +81,14 @@ AppDataSource.initialize()
             min: 3,
           },
         });
+        
         const savedUser = await newUser.save();
         await updateLastInteraction(String(userId));
-        
-        const refBounus = initialPoint / 2;
 
         await addReferal(
           savedUser.telegramUserId,
           referredBy,
-          isUserPremium ? premiumUserReferalBonus : refBounus
+          isUserPremium ? premiumUserReferalBonus : initialPoint
         );
 
         await updateFriendsRefered(referredBy);

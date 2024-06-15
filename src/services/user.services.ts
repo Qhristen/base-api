@@ -139,10 +139,16 @@ export const addReferal = async (
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
-  if (!user) return;
+  const referrer = await userRepository.findOne({
+    where: { telegramUserId: referredBy },
+  });
+
+  if (!user || !referrer) return;
   user.referredBy = referredBy;
   user.referalPoints += point;
   user.totalPoint += point;
+
+  referrer.totalPoint += point
   
   await creatReferral({
     referredFromId: referredBy,
@@ -150,6 +156,7 @@ export const addReferal = async (
     point
   })
   await user.save();
+  await referrer.save()
 };
 
 
@@ -220,7 +227,7 @@ export const incrementAutobot = async () => {
   allUsers
     .filter((user) => user.autobot === true)
     .forEach(async (user) => { 
-      user.autoBotpoints += 1;
+      user.autoBotpoints += user.perclick;
       await user.save()
     });
 };
