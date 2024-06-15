@@ -44,10 +44,6 @@ export class User extends Model {
   @Column({ default: 0 })
   totalPoint!: number;
 
-  @OneToMany(() => User_Referal, (referral) => referral.referredTo)
-  @JoinColumn()
-  referrals!: User_Referal[];
-
   @Column({ default: 0 })
   socialPoints!: number;
 

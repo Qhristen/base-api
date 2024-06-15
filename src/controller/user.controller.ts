@@ -95,11 +95,20 @@ export const getAllUsersRferrals = async (
 ) => {
   try {
     const referals = await findUserReferers(req.params.userId);
-    res.status(200).json({
+
+    const mapedReferals = await Promise.all(referals.map(async (referal) => {
+      const from = await findOneUser(referal.referredFromId);
+      const to = await findOneUser(referal.referredToId);
+      return {
+        referredFrom: from,
+        referredTo: to,
+        point: referal.point
+      };
+    }));
+
+    return res.status(200).json({
       status: "success",
-      data: {
-        referals,
-      },
+      data: mapedReferals,
     });
   } catch (err: any) {
     next(err);

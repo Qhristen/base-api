@@ -13,7 +13,8 @@ export const createUser = async (input: Partial<User>) => {
 };
 
 export const creatReferral = async (input: Partial<User_Referal>) => {
-  return await referalRepository.save(referalRepository.create(input));
+  console.log(input, "cre")
+  return await referalRepository.save(referalRepository.create({...input}));
 };
 
 export const updateUserData = async (id: any, data: User) => {
@@ -37,9 +38,11 @@ export const findAllUsers = async () => {
 };
 
 export const checkMilestoneRewards = async (userId: string) => {
+
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
+  
   if (!user) return;
 
   const milestones = [
@@ -56,12 +59,12 @@ export const checkMilestoneRewards = async (userId: string) => {
 
   for (const milestone of milestones) {
     if (user.friendsReferred === milestone.count) {
-      await addPoints(userId, milestone.reward, 0);
+      // await addPoints(userId, milestone.reward, 0);
       await Bot.telegram.sendMessage(
         userId,
-        `Congratulations! You have referred ${
+        `You have referred ${
           milestone.count
-        } friends and earned ${milestone.reward / 1000}k points!`
+        } friends and earned ${milestone.reward} points claim now!`
       );
     }
   }
@@ -140,13 +143,13 @@ export const addReferal = async (
   user.referredBy = referredBy;
   user.referalPoints += point;
   user.totalPoint += point;
-  // const CreatReferal = await creatReferral({
-  //   referredFromId: userId,
-  //   referredToId: referredBy,
-  //   point
-  // })
+  
+  await creatReferral({
+    referredFromId: referredBy,
+    referredToId: userId,
+    point
+  })
   await user.save();
-  // await CreatReferal.save()
 };
 
 

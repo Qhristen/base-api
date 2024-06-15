@@ -17,12 +17,13 @@ import {
   addReferalPoints,
   checkMilestoneRewards,
   createUser,
+  creatReferral,
   findOneUser,
   incrementUserPoints,
   remindInactiveUsers,
   resetUsersData,
   updateFriendsRefered,
-  updateLastInteraction
+  updateLastInteraction,
 } from "./services/user.services";
 
 require("dotenv").config();
@@ -52,7 +53,6 @@ AppDataSource.initialize()
       const referralLink = `https://t.me/${bot_userName}?start=${userId}`;
 
       let user = await findOneUser(String(userId));
-      let referredByUser = await findOneUser(String(referredBy));
 
       if (!user) {
         const newUser = await createUser({
@@ -81,31 +81,19 @@ AppDataSource.initialize()
             min: 3,
           },
         });
-
-        await newUser.save();
-      }
-
-      await updateLastInteraction(String(userId));
-
-      if (user && !user?.referredBy) {
-        // await addPoints(user.telegramUserId, initialPoint);
-
-        const referrer = await findOneUser(referredBy);
+        const savedUser = await newUser.save();
+        await updateLastInteraction(String(userId));
+        
         const refBounus = initialPoint / 2;
 
-        if (referrer && referrer.telegramUserId !== String(userId)) {
-          await addReferal(user.telegramUserId, referredBy, refBounus);
-          await updateFriendsRefered(referrer.telegramUserId);
-          await checkMilestoneRewards(referredBy);
-          if (isUserPremium) {
-            await addReferalPoints(
-              referrer.telegramUserId,
-              premiumUserReferalBonus
-            );
-          } else {
-            await addReferalPoints(referrer.telegramUserId, refBounus);
-          }
-        }
+        await addReferal(
+          savedUser.telegramUserId,
+          referredBy,
+          isUserPremium ? premiumUserReferalBonus : refBounus
+        );
+
+        await updateFriendsRefered(referredBy);
+        await checkMilestoneRewards(referredBy);
       }
 
       ctx.replyWithPhoto(
