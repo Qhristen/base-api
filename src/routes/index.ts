@@ -33,6 +33,7 @@ import {
   registerUserHandler,
   updateChargeLimit,
   updateRefillSpeed,
+  updateUserelcomePage,
   updateUserFullEnergyBar,
   updateUserLimit,
   updateUserMultitap,
@@ -48,6 +49,7 @@ router.post("/user/:userId/add-point", addUserPoint);
 router.get("/users", getAllUsers);
 router.get("/users/badges", getUserBadges);
 router.get("/user/referals/:userId", getAllUsersRferrals);
+router.post("/user/welcome/:userId", updateUserelcomePage);
 
 //task routes
 router.post("/task/special/create", addSpecialTask);

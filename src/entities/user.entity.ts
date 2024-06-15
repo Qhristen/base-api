@@ -38,6 +38,9 @@ export class User extends Model {
   @Column({ default: false })
   autobot!: boolean;
 
+  @Column({ default: false })
+  welcomePage!: boolean;
+
   @Column({ default: 0 })
   referalPoints!: number;
   

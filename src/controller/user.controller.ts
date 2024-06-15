@@ -341,6 +341,31 @@ export const updateRefillSpeed = async (
   }
 };
 
+export const updateUserelcomePage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await findOneUser(userId);
+
+    if (!user) return;
+
+    user.welcomePage = true;
+    const updatedUser = await user.save();
+    await updateLastInteraction(String(userId));
+
+    res.status(200).json({
+      status: "success",
+      user: updatedUser,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+};
+
 export const getUserBadges = async (
   req: Request,
   res: Response,

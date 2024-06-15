@@ -14,21 +14,20 @@ import { Bot } from "./lib/telegram";
 import router from "./routes";
 import {
   addReferal,
-  addReferalPoints,
   checkMilestoneRewards,
   createUser,
-  creatReferral,
   findOneUser,
   incrementUserPoints,
   remindInactiveUsers,
   resetUsersData,
   updateFriendsRefered,
-  updateLastInteraction,
+  updateLastInteraction
 } from "./services/user.services";
 
 require("dotenv").config();
 
 const web_link = `${process.env.ORIGIN}/welcome`;
+const auth_web_link = `${process.env.ORIGIN}/mobile/tap`;
 const photoUrl = `${process.env.ORIGIN}/logo.png`;
 
 AppDataSource.initialize()
@@ -81,7 +80,7 @@ AppDataSource.initialize()
             min: 3,
           },
         });
-        
+
         const savedUser = await newUser.save();
         await updateLastInteraction(String(userId));
 
@@ -101,7 +100,7 @@ AppDataSource.initialize()
           caption: welcomeMessage,
           reply_markup: {
             inline_keyboard: [
-              [{ text: "Start now!", web_app: { url: web_link } }],
+              [{ text: "Start now!", web_app: { url:user?.welcomePage ? auth_web_link: web_link } }],
               [
                 {
                   text: "Join community",
@@ -128,6 +127,7 @@ AppDataSource.initialize()
 
       const message = `
       Tap to Earn: \nBase is an addictive clicker game where you accumulate Shares by tapping the screen.\n\nLeagues:\nClimb the ranks by earning more Shares and outperforming others in the leagues.\n\nBoosts:\nUnlock boosts and complete tasks to maximize your Shares earnings.\n\nFriends:\nInvite others and both of you will receive bonuses. Assist your friends in advancing to higher leagues for bigger Shares rewards.\n\nThe Purpose:\nCollect as many Shares as possible and exchange them for TAPS, Base Token on Solana Blockchain.\n\nType /help to access this guide.`;
+      let user = await findOneUser(String(userId));
 
       ctx.replyWithPhoto(
         { url: photoUrl },
@@ -135,7 +135,7 @@ AppDataSource.initialize()
           caption: message,
           reply_markup: {
             inline_keyboard: [
-              [{ text: "Start now!", web_app: { url: web_link } }],
+              [{ text: "Start now!", web_app: { url: user?.welcomePage ? auth_web_link: web_link  } }],
             ],
           },
         }
@@ -164,7 +164,7 @@ AppDataSource.initialize()
                   },
                 ],
 
-                [{ text: "Play now!", web_app: { url: web_link } }],
+                [{ text: "Play now!", web_app: { url: user?.welcomePage ? auth_web_link: web_link  } }],
               ],
             },
           }
@@ -185,6 +185,8 @@ AppDataSource.initialize()
     bot.command("socials", async (ctx) => {
       const userId = ctx.message!.from!.id;
       await updateLastInteraction(String(userId));
+      let user = await findOneUser(String(userId));
+
 
       ctx.reply(
         `Join our socials so you do not miss any important news or updates.`,
@@ -209,7 +211,7 @@ AppDataSource.initialize()
                   url: `${process.env.ORIGIN}`,
                 },
               ],
-              [{ text: "Play now!", web_app: { url: web_link } }],
+              [{ text: "Play now!", web_app: { url: user?.welcomePage ? auth_web_link: web_link  } }],
             ],
           },
         }
