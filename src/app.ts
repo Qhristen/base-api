@@ -21,7 +21,7 @@ import {
   remindInactiveUsers,
   resetUsersData,
   updateFriendsRefered,
-  updateLastInteraction
+  updateLastInteraction,
 } from "./services/user.services";
 
 require("dotenv").config();
@@ -83,16 +83,18 @@ AppDataSource.initialize()
 
         const savedUser = await newUser.save();
         await updateLastInteraction(String(userId));
-
-        await addReferal(
-          savedUser.telegramUserId,
-          referredBy,
-          isUserPremium ? premiumUserReferalBonus : initialPoint
-        );
-
-        await updateFriendsRefered(referredBy);
-        await checkMilestoneRewards(referredBy);
-      }
+  
+          if (Number(referredBy)) {
+            await addReferal(
+              savedUser.telegramUserId,
+              referredBy,
+              isUserPremium ? premiumUserReferalBonus : initialPoint
+            );
+            await updateFriendsRefered(referredBy);
+            await checkMilestoneRewards(referredBy);
+          }
+        }
+      
 
       ctx.replyWithPhoto(
         { url: photoUrl },
@@ -100,7 +102,14 @@ AppDataSource.initialize()
           caption: welcomeMessage,
           reply_markup: {
             inline_keyboard: [
-              [{ text: "Start now!", web_app: { url:user?.welcomePage ? auth_web_link: web_link } }],
+              [
+                {
+                  text: "Start now!",
+                  web_app: {
+                    url: user?.welcomePage ? auth_web_link : web_link,
+                  },
+                },
+              ],
               [
                 {
                   text: "Join community",
@@ -135,7 +144,14 @@ AppDataSource.initialize()
           caption: message,
           reply_markup: {
             inline_keyboard: [
-              [{ text: "Start now!", web_app: { url: user?.welcomePage ? auth_web_link: web_link  } }],
+              [
+                {
+                  text: "Start now!",
+                  web_app: {
+                    url: user?.welcomePage ? auth_web_link : web_link,
+                  },
+                },
+              ],
             ],
           },
         }
@@ -164,7 +180,14 @@ AppDataSource.initialize()
                   },
                 ],
 
-                [{ text: "Play now!", web_app: { url: user?.welcomePage ? auth_web_link: web_link  } }],
+                [
+                  {
+                    text: "Play now!",
+                    web_app: {
+                      url: user?.welcomePage ? auth_web_link : web_link,
+                    },
+                  },
+                ],
               ],
             },
           }
@@ -186,7 +209,6 @@ AppDataSource.initialize()
       const userId = ctx.message!.from!.id;
       await updateLastInteraction(String(userId));
       let user = await findOneUser(String(userId));
-
 
       ctx.reply(
         `Join our socials so you do not miss any important news or updates.`,
@@ -211,7 +233,14 @@ AppDataSource.initialize()
                   url: `${process.env.ORIGIN}`,
                 },
               ],
-              [{ text: "Play now!", web_app: { url: user?.welcomePage ? auth_web_link: web_link  } }],
+              [
+                {
+                  text: "Play now!",
+                  web_app: {
+                    url: user?.welcomePage ? auth_web_link : web_link,
+                  },
+                },
+              ],
             ],
           },
         }

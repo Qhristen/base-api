@@ -5,10 +5,10 @@ import { User } from "./user.entity";
 @Entity("user_referrals")
 export class User_Referal extends Model {
 
-  @Column()
+  @Column({ nullable: true })
   referredFromId: string;
 
-  @Column()
+  @Column({ nullable: true })
   referredToId: string;
 
   @Column({ default: 0 })
