@@ -57,7 +57,7 @@ export const checkMilestoneRewards = async (userId: string) => {
   ];
 
   for (const milestone of milestones) {
-    if (user.friendsReferred >= milestone.count) {
+    if (user.friendsReferred === milestone.count) {
       // await addPoints(userId, milestone.reward, 0);
       await updateRank(user.telegramUserId)
       await Bot.telegram.sendMessage(
@@ -202,7 +202,7 @@ export const updateRank = async (id: string) => {
     where: { telegramUserId: id },
   });
   for (let i = rankThresholds.length - 1; i >= 0; i--) {
-    if (user && user.points >= rankThresholds[i].points) {
+    if (user && user.points === rankThresholds[i].points) {
       user.league = rankThresholds[i].name.toLocaleLowerCase();
       await user.save();
     }
