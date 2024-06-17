@@ -58,7 +58,7 @@ export const checkMilestoneRewards = async (userId: string) => {
   ];
 
   for (const milestone of milestones) {
-    if (user.friendsReferred === milestone.count) {
+    if (user.friendsReferred >= milestone.count) {
       // await addPoints(userId, milestone.reward, 0);
       await Bot.telegram.sendMessage(
         userId,
@@ -261,7 +261,7 @@ export const remindInactiveUsers = async () => {
   const inactiveUsers = await userRepository.find({
     where: { lastInteraction: MoreThan(twentyFourHoursAgo) },
   });
-  const web_link = `${process.env.ORIGIN}/welcome`;
+  const web_link = `${process.env.ORIGIN}/mobile/tap`;
 
   for (const user of inactiveUsers) {
     try {
