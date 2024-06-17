@@ -92,6 +92,7 @@ export const addTouches = async (
   if (user) {
     user.points += points;
     user.touches += points;
+    user.totalPoint += points;
     await updateRank(userId);
     await user.save();
   }
