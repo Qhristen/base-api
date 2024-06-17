@@ -6,7 +6,7 @@ export const rankThresholds = [
   { name: "Rookie", points: 10000 },
   { name: "Junior", points: 30000 },
   { name: "Senior", points: 50000 },
-  { name: "Genius", points: 10000 },
+  { name: "Genius", points: 100000 },
   { name: "Advanced", points: 250000 },
   { name: "Expert", points: 500000 },
   { name: "Master", points: 1000000 },

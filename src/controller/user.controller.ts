@@ -14,6 +14,7 @@ import {
   updateRank,
 } from "../services/user.services";
 import AppError from "../lib/appError";
+import { findAllLeagueTask, findAllRefTask } from "../services/task.services";
 
 let userIntervals: { [key: string]: NodeJS.Timeout } = {};
 
@@ -377,9 +378,10 @@ export const getUserBadges = async (
   next: NextFunction
 ) => {
   try {
+    const badges = await findAllLeagueTask()
     res.status(200).json({
       status: "success",
-      badges: rankThresholds,
+      badges: badges,
     });
   } catch (err: any) {
     next(err);
