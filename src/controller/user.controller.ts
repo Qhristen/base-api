@@ -3,12 +3,15 @@ import { rankThresholds } from "../lib/constant";
 import { CreateUserInput } from "../schema/user.schema";
 import {
   addPoints,
+  addTouches,
   baseStats,
+  checkMilestoneRewards,
   createUser,
   findAllUsers,
   findOneUser,
   findUserReferers,
   updateLastInteraction,
+  updateRank,
 } from "../services/user.services";
 import AppError from "../lib/appError";
 
@@ -53,11 +56,13 @@ export const getCurrentUser = async (
 ) => {
   try {
     const userId = req.params.userId;
-    await updateLastInteraction(String(userId));
-
+    
     const user = await findOneUser(userId);
-
+    
     if (!user) return;
+    await checkMilestoneRewards(user.telegramUserId);
+    await updateRank(user.telegramUserId);
+    await updateLastInteraction(String(userId));
 
     res.status(200).json({
       status: "success",
@@ -125,7 +130,7 @@ export const addUserPoint = async (
     const userId = req.params.userId;
     console.log(point);
 
-    await addPoints(userId, point, point);
+    await addTouches(userId, point);
     res.status(200).json({
       status: "success",
       point,
@@ -164,7 +169,7 @@ export const updateUserTapGuru = async (
 
     if (!user) return;
 
-    user.tapGuru = { min: min - 1, active, max };
+    user.tapGuru = { min: min, active, max };
     await updateLastInteraction(String(userId));
 
     const updatedUser = await user.save();

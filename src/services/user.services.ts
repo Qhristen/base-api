@@ -13,8 +13,8 @@ export const createUser = async (input: Partial<User>) => {
 };
 
 export const creatReferral = async (input: Partial<User_Referal>) => {
-  console.log(input, "cre")
-  return await referalRepository.save(referalRepository.create({...input}));
+  console.log(input, "cre");
+  return await referalRepository.save(referalRepository.create({ ...input }));
 };
 
 export const updateUserData = async (id: any, data: User) => {
@@ -38,11 +38,10 @@ export const findAllUsers = async () => {
 };
 
 export const checkMilestoneRewards = async (userId: string) => {
-
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
-  
+
   if (!user) return;
 
   const milestones = [
@@ -60,11 +59,10 @@ export const checkMilestoneRewards = async (userId: string) => {
   for (const milestone of milestones) {
     if (user.friendsReferred >= milestone.count) {
       // await addPoints(userId, milestone.reward, 0);
+      await updateRank(user.telegramUserId)
       await Bot.telegram.sendMessage(
         userId,
-        `You have referred ${
-          milestone.count
-        } friends and earned ${milestone.reward} points claim now!`
+        `You have referred ${milestone.count} friends and earned ${milestone.reward} points claim now!`
       );
     }
   }
@@ -73,15 +71,27 @@ export const checkMilestoneRewards = async (userId: string) => {
 export const addPoints = async (
   userId: string,
   points: number,
-  touch: number
+) => {
+  const user = await userRepository.findOne({
+    where: { telegramUserId: userId },
+  });
+  if (user) {
+    user.totalPoint += points;
+    await updateRank(userId);
+    await user.save();
+  }
+};
+
+export const addTouches = async (
+  userId: string,
+  points: number,
 ) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
   if (user) {
     user.points += points;
-    user.touches += touch;
-    user.totalPoint += points;
+    user.touches += points;
     await updateRank(userId);
     await user.save();
   }
@@ -148,17 +158,16 @@ export const addReferal = async (
   user.referalPoints += point;
   user.totalPoint += point;
 
-  referrer.totalPoint += point
-  
+  referrer.totalPoint += point;
+
   await creatReferral({
     referredFromId: referredBy,
     referredToId: userId,
-    point
-  })
+    point,
+  });
   await user.save();
-  await referrer.save()
+  await referrer.save();
 };
-
 
 export const baseStats = async () => {
   const totalUsers = await userRepository.count();
@@ -186,12 +195,13 @@ export const baseStats = async () => {
   };
 };
 
+
 export const updateRank = async (id: string) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: id },
   });
   for (let i = rankThresholds.length - 1; i >= 0; i--) {
-    if (user && user.points === rankThresholds[i].points) {
+    if (user && user.points >= rankThresholds[i].points) {
       user.league = rankThresholds[i].name.toLocaleLowerCase();
       await user.save();
     }
@@ -216,7 +226,7 @@ export const incrementUserPoints = async () => {
   allUsers.forEach(async (user) => {
     if (user.limit < user.max) {
       user.limit += user.refillSpeed;
-      await user.save()
+      await user.save();
     }
   });
 };
@@ -226,9 +236,9 @@ export const incrementAutobot = async () => {
   const allUsers = await userRepository.find();
   allUsers
     .filter((user) => user.autobot === true)
-    .forEach(async (user) => { 
+    .forEach(async (user) => {
       user.autoBotpoints += user.perclick;
-      await user.save()
+      await user.save();
     });
 };
 
@@ -248,7 +258,7 @@ export const resetUsersData = async () => {
         max: 3,
         min: 3,
       };
-     await user.save()
+      await user.save();
     } catch (error) {
       console.error(`Failed to send message`, error);
     }
@@ -277,7 +287,7 @@ export const remindInactiveUsers = async () => {
         }
       );
       user.lastInteraction = new Date();
-      await user.save()
+      await user.save();
     } catch (error) {
       console.error(
         `Failed to send message to user @${user.telegramUserName}:`,

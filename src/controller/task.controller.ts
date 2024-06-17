@@ -264,7 +264,7 @@ export const submitLeagueTask = async (
 
     if (!user) return next(new AppError(404, "user not found"));
 
-    await addPoints(user.telegramUserId, point, 0);
+    await addPoints(user.telegramUserId, point);
 
     const newTask = await submit_task({
       name,
