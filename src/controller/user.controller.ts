@@ -57,14 +57,11 @@ export const getCurrentUser = async (
 ) => {
   try {
     const userId = req.params.userId;
-    
     const user = await findOneUser(userId);
-    
-    if (!user) return;
-    await checkMilestoneRewards(user.telegramUserId);
-    await updateRank(user.telegramUserId);
-    await updateLastInteraction(String(userId));
 
+    if (!user) return;
+    
+    await updateLastInteraction(String(userId));
     res.status(200).json({
       status: "success",
       data: {

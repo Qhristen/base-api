@@ -258,13 +258,16 @@ export const submitLeagueTask = async (
   next: NextFunction
 ) => {
   try {
-    const { taskId, userId, status, name, point, type } = req.body;
+    const { taskId, userId, status, name, point, type, league } = req.body;
     const task = await findOneLeagueTask(taskId);
     const user = await findOneUser(userId);
 
     if (!user) return next(new AppError(404, "user not found"));
 
     await addPoints(user.telegramUserId, point);
+    
+    user.league = league
+    await user.save()
 
     const newTask = await submit_task({
       name,

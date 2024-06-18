@@ -235,11 +235,28 @@ export const incrementUserPoints = async () => {
 // Set up a scheduled task to check for inactive users
 export const incrementAutobot = async () => {
   const allUsers = await userRepository.find();
+  const web_link = `${process.env.ORIGIN}/mobile/tap`;
+
   allUsers
     .filter((user) => user.autobot === true)
     .forEach(async (user) => {
       user.autoBotpoints += user.perclick;
       await user.save();
+
+      if(user.autoBotpoints >= 40000){
+        await Bot.telegram.sendMessage(
+          user.telegramUserId,
+          `You have ${user.autoBotpoints}, empty your bot now to keep him tapping.`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "Play now!", web_app: { url: web_link } }],
+              ],
+            },
+          }
+        );
+
+      }
     });
 };
 
