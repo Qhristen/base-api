@@ -59,7 +59,7 @@ export const checkMilestoneRewards = async (userId: string) => {
   for (const milestone of milestones) {
     if (user.friendsReferred === milestone.count) {
       // await addPoints(userId, milestone.reward, 0);
-      await updateRank(user.telegramUserId)
+      await updateRank(user.telegramUserId);
       await Bot.telegram.sendMessage(
         userId,
         `You have referred ${milestone.count} friends and earned ${milestone.reward} points claim now!`
@@ -68,10 +68,7 @@ export const checkMilestoneRewards = async (userId: string) => {
   }
 };
 
-export const addPoints = async (
-  userId: string,
-  points: number,
-) => {
+export const addPoints = async (userId: string, points: number) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
@@ -82,10 +79,7 @@ export const addPoints = async (
   }
 };
 
-export const addTouches = async (
-  userId: string,
-  points: number,
-) => {
+export const addTouches = async (userId: string, points: number) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: userId },
   });
@@ -196,7 +190,6 @@ export const baseStats = async () => {
   };
 };
 
-
 export const updateRank = async (id: string) => {
   const user = await userRepository.findOne({
     where: { telegramUserId: id },
@@ -243,7 +236,7 @@ export const incrementAutobot = async () => {
       user.autoBotpoints += user.perclick;
       await user.save();
 
-      if(user.autoBotpoints >= 40000){
+      if (user.autoBotpoints >= 40000) {
         await Bot.telegram.sendMessage(
           user.telegramUserId,
           `You have ${user.autoBotpoints}, empty your bot now to keep him tapping.`,
@@ -255,7 +248,6 @@ export const incrementAutobot = async () => {
             },
           }
         );
-
       }
     });
 };
@@ -293,19 +285,21 @@ export const remindInactiveUsers = async () => {
 
   for (const user of inactiveUsers) {
     try {
-      await Bot.telegram.sendMessage(
-        user.telegramUserId,
-        "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: "Play now!", web_app: { url: web_link } }],
-            ],
-          },
-        }
-      );
-      user.lastInteraction = new Date();
-      await user.save();
+      if (new Date(user.lastInteraction) >= twentyFourHoursAgo) {
+        await Bot.telegram.sendMessage(
+          user.telegramUserId,
+          "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "Play now!", web_app: { url: web_link } }],
+              ],
+            },
+          }
+        );
+        user.lastInteraction = new Date();
+        await user.save();
+      }
     } catch (error) {
       console.error(
         `Failed to send message to user @${user.telegramUserName}:`,
