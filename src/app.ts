@@ -301,7 +301,7 @@ AppDataSource.initialize()
     // process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
     const inactiveUsers = new CronJob('0 0 */12 * * *', remindInactiveUsers); // Run every 12 hour
-    const resetUserInfo = new CronJob('0 0 */12 * * *', resetUsersData); // Run every 12 hour
+    const resetUserInfo = new CronJob('0 0 * * * *', resetUsersData); // Run every 24 hour
     const incrementUserPointJob = new CronJob(
       "* * * * * *",
       incrementUserPoints

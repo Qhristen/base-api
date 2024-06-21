@@ -258,17 +258,22 @@ export const resetUsersData = async () => {
 
   for (const user of allUsers) {
     try {
-      user.tapGuru = {
-        active: false,
-        max: 3,
-        min: 3,
-      };
-      user.fullEnergy = {
-        active: false,
-        max: 3,
-        min: 3,
-      };
-      await user.save();
+      if (
+        user.tapGuru.min < user.tapGuru.max ||
+        user.fullEnergy.min < user.fullEnergy.max
+      ) {
+        user.tapGuru = {
+          active: false,
+          max: 3,
+          min: 3,
+        };
+        user.fullEnergy = {
+          active: false,
+          max: 3,
+          min: 3,
+        };
+        await user.save();
+      }
     } catch (error) {
       console.error(`Failed to send message`, error);
     }
@@ -285,7 +290,7 @@ export const remindInactiveUsers = async () => {
 
   for (const user of inactiveUsers) {
     try {
-      if (new Date(user.lastInteraction) >= twentyFourHoursAgo) {
+      if (new Date(user.lastInteraction) > twentyFourHoursAgo) {
         await Bot.telegram.sendMessage(
           user.telegramUserId,
           "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
