@@ -266,7 +266,7 @@ export const submitLeagueTask = async (
 
     await addPoints(user.telegramUserId, point);
     
-    user.league = league
+    // user.league = league
     await user.save()
 
     const newTask = await submit_task({

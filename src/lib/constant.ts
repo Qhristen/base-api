@@ -1,8 +1,8 @@
-export const initialPoint = 2500;
+export const referalPoint = 2500;
 export const premiumUserReferalBonus = 50000;
 export const bot_userName = `${process.env.TELEGRAM_BOT_NAME}`;
 export const rankThresholds = [
-  { name: "Novice", points: initialPoint },
+  { name: "Novice", points: 2500 },
   { name: "Rookie", points: 10000 },
   { name: "Junior", points: 30000 },
   { name: "Senior", points: 50000 },

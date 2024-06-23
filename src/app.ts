@@ -6,8 +6,8 @@ import morgan from "morgan";
 import AppError from "./lib/appError";
 import {
   bot_userName,
-  initialPoint,
   premiumUserReferalBonus,
+  referalPoint,
 } from "./lib/constant";
 import { AppDataSource } from "./lib/data-source";
 import { Bot } from "./lib/telegram";
@@ -59,7 +59,7 @@ AppDataSource.initialize()
           telegramUserId: String(userId),
           telegramUserName: username,
           referralLink,
-          totalPoint: initialPoint,
+          totalPoint: 0,
           limit: 500,
           max: 500,
           multiTap: 2,
@@ -88,7 +88,7 @@ AppDataSource.initialize()
             await addReferal(
               savedUser.telegramUserId,
               referredBy,
-              isUserPremium ? premiumUserReferalBonus : initialPoint
+              isUserPremium ? premiumUserReferalBonus : referalPoint
             );
             await updateFriendsRefered(referredBy);
             await checkMilestoneRewards(referredBy);
@@ -295,7 +295,7 @@ AppDataSource.initialize()
     );
 
     bot.launch();
-
+    
     // Enable graceful stop
     // process.once("SIGINT", () => bot.stop("SIGINT"));
     // process.once("SIGTERM", () => bot.stop("SIGTERM"));
@@ -303,7 +303,7 @@ AppDataSource.initialize()
     const inactiveUsers = new CronJob('0 0 */12 * * *', remindInactiveUsers); // Run every 12 hour
     const resetUserInfo = new CronJob('0 0 * * * *', resetUsersData); // Run every 24 hour
     const incrementUserPointJob = new CronJob(
-      "* * * * * *",
+      "*/2 * * * * *",
       incrementUserPoints
     ); // Run every second
 

@@ -58,7 +58,7 @@ export const checkMilestoneRewards = async (userId: string) => {
 
   for (const milestone of milestones) {
     if (user.friendsReferred === milestone.count) {
-      // await addPoints(userId, milestone.reward, 0);
+      // await addPoints(userId, milestone.reward);
       await updateRank(user.telegramUserId);
       await Bot.telegram.sendMessage(
         userId,
@@ -150,9 +150,6 @@ export const addReferal = async (
 
   if (!user || !referrer) return;
   user.referredBy = referredBy;
-  user.referalPoints += point;
-  user.totalPoint += point;
-
   referrer.totalPoint += point;
 
   await creatReferral({
@@ -256,60 +253,47 @@ export const incrementAutobot = async () => {
 export const resetUsersData = async () => {
   const allUsers = await userRepository.find();
 
-  for (const user of allUsers) {
-    try {
-      if (
-        user.tapGuru.min < user.tapGuru.max ||
-        user.fullEnergy.min < user.fullEnergy.max
-      ) {
-        user.tapGuru = {
-          active: false,
-          max: 3,
-          min: 3,
-        };
-        user.fullEnergy = {
-          active: false,
-          max: 3,
-          min: 3,
-        };
-        await user.save();
-      }
-    } catch (error) {
-      console.error(`Failed to send message`, error);
+  allUsers.forEach(async (user) => {
+    if (
+      user.tapGuru.min < user.tapGuru.max ||
+      user.fullEnergy.min < user.fullEnergy.max
+    ) {
+      user.tapGuru = {
+        active: false,
+        max: 3,
+        min: 3,
+      };
+      user.fullEnergy = {
+        active: false,
+        max: 3,
+        min: 3,
+      };
+      await user.save();
     }
-  }
+  });
 };
 
 // Set up a scheduled task to check for inactive users
 export const remindInactiveUsers = async () => {
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const inactiveUsers = await userRepository.find({
-    where: { lastInteraction: MoreThan(twentyFourHoursAgo) },
-  });
+  const users = await userRepository.find();
   const web_link = `${process.env.ORIGIN}/mobile/tap`;
 
-  for (const user of inactiveUsers) {
-    try {
-      if (new Date(user.lastInteraction) > twentyFourHoursAgo) {
-        await Bot.telegram.sendMessage(
-          user.telegramUserId,
-          "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: "Play now!", web_app: { url: web_link } }],
-              ],
-            },
-          }
-        );
-        user.lastInteraction = new Date();
-        await user.save();
-      }
-    } catch (error) {
-      console.error(
-        `Failed to send message to user @${user.telegramUserName}:`,
-        error
+  users.forEach(async (user) => {
+    if (new Date(user.lastInteraction) > twentyFourHoursAgo) {
+      await Bot.telegram.sendMessage(
+        user.telegramUserId,
+        "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Play now!", web_app: { url: web_link } }],
+            ],
+          },
+        }
       );
+      user.lastInteraction = new Date();
+      await user.save();
     }
-  }
+  });
 };
