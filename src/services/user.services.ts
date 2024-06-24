@@ -275,7 +275,8 @@ export const resetUsersData = async () => {
 
 // Set up a scheduled task to check for inactive users
 export const remindInactiveUsers = async () => {
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const users = await userRepository.find();
   const web_link = `${process.env.ORIGIN}/mobile/tap`;
 
