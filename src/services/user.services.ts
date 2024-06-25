@@ -59,7 +59,7 @@ export const checkMilestoneRewards = async (userId: string) => {
   for (const milestone of milestones) {
     if (user.friendsReferred === milestone.count) {
       // await addPoints(userId, milestone.reward);
-      await updateRank(user);
+      // await updateRank(user);
       await Bot.telegram.sendMessage(
         userId,
         `You have referred ${milestone.count} friends and earned ${milestone.reward} points claim now!`
