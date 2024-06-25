@@ -59,7 +59,7 @@ export const checkMilestoneRewards = async (userId: string) => {
   for (const milestone of milestones) {
     if (user.friendsReferred === milestone.count) {
       // await addPoints(userId, milestone.reward);
-      await updateRank(user.telegramUserId);
+      await updateRank(user);
       await Bot.telegram.sendMessage(
         userId,
         `You have referred ${milestone.count} friends and earned ${milestone.reward} points claim now!`
@@ -74,7 +74,7 @@ export const addPoints = async (userId: string, points: number) => {
   });
   if (user) {
     user.totalPoint += points;
-    await updateRank(userId);
+    await updateRank(user);
     await user.save();
   }
 };
@@ -87,7 +87,7 @@ export const addTouches = async (userId: string, points: number) => {
     user.points += points;
     user.touches += points;
     user.totalPoint += points;
-    await updateRank(userId);
+    await updateRank(user);
     await user.save();
   }
 };
@@ -109,7 +109,7 @@ export const addReferalPoints = async (userId: string, points: number) => {
   if (user) {
     user.referalPoints += points;
     user.totalPoint += points;
-    await updateRank(userId);
+    await updateRank(user);
     await user.save();
   }
 };
@@ -121,7 +121,7 @@ export const addSocialPoints = async (userId: string, points: number) => {
   if (user) {
     user.socialPoints += points;
     user.totalPoint += points;
-    await updateRank(userId);
+    await updateRank(user);
     await user.save();
   }
 };
@@ -187,14 +187,11 @@ export const baseStats = async () => {
   };
 };
 
-export const updateRank = async (id: string) => {
-  const user = await userRepository.findOne({
-    where: { telegramUserId: id },
-  });
+export const updateRank = async (user: User) => {
   for (let i = rankThresholds.length - 1; i >= 0; i--) {
-    if (user && user.points === rankThresholds[i].points) {
-      user.league = rankThresholds[i].name.toLocaleLowerCase();
-      await user.save();
+    if (user.points >= rankThresholds[i].points) {
+      user.league = rankThresholds[i].name.toLocaleUpperCase();
+      break;
     }
   }
 };
@@ -281,7 +278,7 @@ export const remindInactiveUsers = async () => {
   const web_link = `${process.env.ORIGIN}/mobile/tap`;
 
   users.forEach(async (user) => {
-    if (new Date(user.lastInteraction) > twentyFourHoursAgo) {
+    if (user.lastInteraction.getTime() > twentyFourHoursAgo.getTime()) {
       await Bot.telegram.sendMessage(
         user.telegramUserId,
         "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
