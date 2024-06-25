@@ -80,6 +80,9 @@ export class User extends Model {
   @Column({ default: 1 })
   chargeLevel!: number;
 
+  @Column({ default: 200 })
+  chargeLimitPoint!: number;
+
   @Column("simple-json", { nullable: true })
   tapGuru!: { min: number; max: number; active: boolean };
 

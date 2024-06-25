@@ -63,12 +63,13 @@ AppDataSource.initialize()
           limit: 500,
           max: 500,
           multiTap: 2,
-          multiTapPoint: 500,
+          multiTapPoint: 200,
           multiTapLevel: 1,
           refillSpeed: 1,
           refillLevel: 1,
           chargeLevel: 1,
-          refillPoint: 2500,
+          chargeLimitPoint: 200,
+          refillPoint: 2000,
           tapGuru: {
             active: false,
             max: 3,
@@ -83,18 +84,17 @@ AppDataSource.initialize()
 
         const savedUser = await newUser.save();
         await updateLastInteraction(String(userId));
-  
-          if (Number(referredBy)) {
-            await addReferal(
-              savedUser.telegramUserId,
-              referredBy,
-              isUserPremium ? premiumUserReferalBonus : referalPoint
-            );
-            await updateFriendsRefered(referredBy);
-            await checkMilestoneRewards(referredBy);
-          }
+
+        if (Number(referredBy)) {
+          await addReferal(
+            savedUser.telegramUserId,
+            referredBy,
+            isUserPremium ? premiumUserReferalBonus : referalPoint
+          );
+          await updateFriendsRefered(referredBy);
+          await checkMilestoneRewards(referredBy);
         }
-      
+      }
 
       ctx.replyWithPhoto(
         { url: photoUrl },
@@ -295,13 +295,13 @@ AppDataSource.initialize()
     );
 
     bot.launch();
-    
+
     // Enable graceful stop
     // process.once("SIGINT", () => bot.stop("SIGINT"));
     // process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
-    const inactiveUsers = new CronJob('0 0 */12 * * *', remindInactiveUsers); // Run every 12 hour
-    const resetUserInfo = new CronJob('0 0 * * * *', resetUsersData); // Run every 24 hour
+    const inactiveUsers = new CronJob("0 0 */12 * * *", remindInactiveUsers); // Run every 12 hour
+    const resetUserInfo = new CronJob("0 0 * * * *", resetUsersData); // Run every 24 hour
     const incrementUserPointJob = new CronJob(
       "*/2 * * * * *",
       incrementUserPoints

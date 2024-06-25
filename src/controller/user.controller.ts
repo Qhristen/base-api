@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { rankThresholds } from "../lib/constant";
+import {
+  rankThresholds,
+  RefillTokenRequirements,
+  tokenRequirements,
+} from "../lib/constant";
 import { CreateUserInput } from "../schema/user.schema";
 import {
   addPoints,
@@ -60,7 +64,7 @@ export const getCurrentUser = async (
     const user = await findOneUser(userId);
 
     if (!user) return;
-    
+
     await updateLastInteraction(String(userId));
     res.status(200).json({
       status: "success",
@@ -99,15 +103,17 @@ export const getAllUsersRferrals = async (
   try {
     const referals = await findUserReferers(req.params.userId);
 
-    const mapedReferals = await Promise.all(referals.map(async (referal) => {
-      const from = await findOneUser(referal.referredFromId);
-      const to = await findOneUser(referal.referredToId);
-      return {
-        referredFrom: from,
-        referredTo: to,
-        point: referal.point
-      };
-    }));
+    const mapedReferals = await Promise.all(
+      referals.map(async (referal) => {
+        const from = await findOneUser(referal.referredFromId);
+        const to = await findOneUser(referal.referredToId);
+        return {
+          referredFrom: from,
+          referredTo: to,
+          point: referal.point,
+        };
+      })
+    );
 
     return res.status(200).json({
       status: "success",
@@ -187,19 +193,27 @@ export const updateUserMultitap = async (
   next: NextFunction
 ) => {
   try {
-    const { point } = req.body;
+    const { level } = req.body;
     const { userId } = req.params;
 
+    await updateLastInteraction(String(userId));
     const user = await findOneUser(userId);
 
     if (!user) return;
 
-    user.totalPoint -= point;
-    user.perclick += 1;
-    user.multiTapLevel += 1;
-    user.multiTapPoint = user.multiTapPoint * 2;
+    if (user.multiTapLevel <= 10) {
+      const tokensRequired =
+        tokenRequirements[user.multiTapLevel as keyof typeof tokenRequirements];
 
-    await updateLastInteraction(String(userId));
+      if (user.totalPoint >= tokensRequired) {
+        user.totalPoint -= tokensRequired;
+        user.perclick += 1;
+        user.multiTapLevel = level;
+        user.multiTapPoint = tokenRequirements[level];
+      } else {
+        return next(new AppError(500, "Not enough tokens to level up."));
+      }
+    }
 
     const updatedUser = await user.save();
 
@@ -280,7 +294,7 @@ export const updateChargeLimit = async (
 ) => {
   try {
     console.log(req.body);
-    const { point, limit } = req.body;
+    const { limit, level } = req.body;
     const { userId } = req.params;
 
     await updateLastInteraction(String(userId));
@@ -288,19 +302,20 @@ export const updateChargeLimit = async (
 
     if (!user) return;
 
-    if (user.totalPoint < point) {
-      return next(
-        new AppError(
-          500,
-          "you do not have a enough point to purchase charge limit"
-        )
-      );
-    }
+    if (user.chargeLevel <= 10) {
+      const tokensRequired =
+        tokenRequirements[user.chargeLevel as keyof typeof tokenRequirements];
 
-    user.totalPoint -= point * 2;
-    user.limit = limit;
-    user.max = limit;
-    user.chargeLevel += 1;
+      if (user.totalPoint >= tokensRequired) {
+        user.totalPoint -= tokensRequired;
+        user.limit = limit;
+        user.max = limit;
+        user.chargeLimitPoint = tokenRequirements[level];
+        user.chargeLevel = level;
+      } else {
+        return next(new AppError(500, "Not enough tokens to level up."));
+      }
+    }
 
     const updatedUser = await user.save();
 
@@ -320,17 +335,28 @@ export const updateRefillSpeed = async (
 ) => {
   try {
     console.log(req.body);
-    const { point, speed } = req.body;
+    const { speed, level } = req.body;
     const { userId } = req.params;
 
     const user = await findOneUser(userId);
 
     if (!user) return;
 
-    user.totalPoint -= point;
-    user.refillSpeed = speed;
-    user.refillLevel += 1;
-    user.refillPoint += user.refillPoint * 2;
+    if (user.chargeLevel <= 10) {
+      const tokensRequired =
+        RefillTokenRequirements[
+          user.refillLevel as keyof typeof tokenRequirements
+        ];
+
+      if (user.totalPoint >= tokensRequired) {
+        user.totalPoint -= tokensRequired;
+        user.refillSpeed = speed;
+        user.refillLevel = level;
+        user.refillPoint = RefillTokenRequirements[level];
+      } else {
+        return next(new AppError(500, "Not enough tokens to level up."));
+      }
+    }
 
     const updatedUser = await user.save();
     await updateLastInteraction(String(userId));
@@ -375,7 +401,7 @@ export const getUserBadges = async (
   next: NextFunction
 ) => {
   try {
-    const badges = await findAllLeagueTask()
+    const badges = await findAllLeagueTask();
     res.status(200).json({
       status: "success",
       badges: badges,
