@@ -85,7 +85,7 @@ AppDataSource.initialize()
         const savedUser = await newUser.save();
         await updateLastInteraction(String(userId));
 
-        if (Number(referredBy)) {
+        if (Number(referredBy) && String(userId) !== referredBy) {
           await addReferal(
             savedUser.telegramUserId,
             referredBy,
@@ -300,15 +300,24 @@ AppDataSource.initialize()
     // process.once("SIGINT", () => bot.stop("SIGINT"));
     // process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
-    const inactiveUsers = new CronJob("0 0 */12 * * *", remindInactiveUsers); // Run every 12 hour
-    const resetUserInfo = new CronJob("0 0 * * * *", resetUsersData); // Run every 24 hour
+    // const inactiveUsers = new CronJob("0 0 * * * *", remindInactiveUsers); // Run every 12 hour
+    const twentyFourhrJobs = new CronJob(
+      "0 0 * * * *",
+      async () => {
+        await resetUsersData();
+        await remindInactiveUsers();
+      },
+      null,
+      true,
+      "UTC"
+    ); // Run every 24 hour
     const incrementUserPointJob = new CronJob(
       "*/2 * * * * *",
       incrementUserPoints
     ); // Run every second
 
-    inactiveUsers.start();
-    resetUserInfo.start();
+    // inactiveUsers.start();
+    twentyFourhrJobs.start();
     incrementUserPointJob.start();
 
     const port = process.env.PORT;

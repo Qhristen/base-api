@@ -18,7 +18,14 @@ import {
   updateRank,
 } from "../services/user.services";
 import AppError from "../lib/appError";
-import { findAllLeagueTask, findAllRefTask } from "../services/task.services";
+import {
+  findAllLeagueTask,
+  findAllRefTask,
+  findAllSpecialTask,
+  findAllUserActivity,
+  findAllUserTask,
+} from "../services/task.services";
+import { Special_Task } from "../entities/special_task.entity";
 
 let userIntervals: { [key: string]: NodeJS.Timeout } = {};
 

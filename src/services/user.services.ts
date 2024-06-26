@@ -3,6 +3,7 @@ import { User } from "../entities/user.entity";
 import { rankThresholds } from "../lib/constant";
 import { AppDataSource } from "../lib/data-source";
 import { Bot } from "../lib/telegram";
+import moment from 'moment'
 import { User_Referal } from "../entities/user_referral.entity";
 
 const userRepository = AppDataSource.getRepository(User);
@@ -272,13 +273,16 @@ export const resetUsersData = async () => {
 
 // Set up a scheduled task to check for inactive users
 export const remindInactiveUsers = async () => {
-  const now = new Date();
-  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const users = await userRepository.find();
   const web_link = `${process.env.ORIGIN}/mobile/tap`;
+  const now = moment();
 
   users.forEach(async (user) => {
-    if (user.lastInteraction.getTime() > twentyFourHoursAgo.getTime()) {
+    const lastInteraction = moment(user.lastInteraction);
+    const duration = moment.duration(now.diff(lastInteraction));
+    const hours = duration.asHours();
+
+    if (hours > 24) { 
       await Bot.telegram.sendMessage(
         user.telegramUserId,
         "You have not interacted with the bot for over 24 hours. Please come back and check your points!",
