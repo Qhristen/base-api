@@ -303,9 +303,6 @@ AppDataSource.initialize()
 
     bot.launch();
 
-    // Enable graceful stop
-    // process.once("SIGINT", () => bot.stop("SIGINT"));
-    // process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
     // const inactiveUsers = new CronJob("0 0 * * * *", remindInactiveUsers); // Run every 12 hour
     const twentyFourhrJobs = new CronJob(
@@ -326,6 +323,11 @@ AppDataSource.initialize()
     // inactiveUsers.start();
     twentyFourhrJobs.start();
     incrementUserPointJob.start();
+
+    
+    // Enable graceful stop
+    process.once("SIGINT", () => bot.stop("SIGINT"));
+    process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
     const port = process.env.PORT;
 
