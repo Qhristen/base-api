@@ -1,6 +1,6 @@
 import { LessThan, MoreThan } from "typeorm";
 import { User } from "../entities/user.entity";
-import { rankThresholds } from "../lib/constant";
+import { inviteMilestones, rankThresholds } from "../lib/constant";
 import { AppDataSource } from "../lib/data-source";
 import { Bot } from "../lib/telegram";
 import moment from "moment";
@@ -56,19 +56,7 @@ export const checkMilestoneRewards = async (userId: string) => {
 
   if (!user) return;
 
-  const milestones = [
-    { count: 5, reward: 50000 },
-    { count: 10, reward: 200000 },
-    { count: 25, reward: 250000 },
-    { count: 50, reward: 300000 },
-    { count: 100, reward: 500000 },
-    { count: 500, reward: 2500000 },
-    { count: 1000, reward: 3500000 },
-    { count: 10000, reward: 12000000 },
-    { count: 50000, reward: 120000000 },
-  ];
-
-  for (const milestone of milestones) {
+  for (const milestone of inviteMilestones) {
     if (user.friendsReferred === milestone.count) {
       // await addPoints(userId, milestone.reward);
       // await updateRank(user);
@@ -243,31 +231,11 @@ export const areAllSpecialActivitiesDone = async (
 };
 
 export const areAllLeagueTasksDone = async (user: User): Promise<boolean> => {
-  const tasks = await findAllLeagueTask();
-  const userTask = await findAllUserTask();
-
-  const taskIds = tasks.map((task) => task.id);
-  const clickedTaskIds = userTask
-    .filter((activity) => activity.userId === user.telegramUserId)
-    .map((activity) => activity.taskId);
-
-  const uniqueClickedTaskIds = new Set(clickedTaskIds);
-
-  return taskIds.every((taskId) => uniqueClickedTaskIds.has(taskId));
+  return rankThresholds.some((milestone) => user.points === milestone.points);
 };
 
 export const areAllRefTasksDone = async (user: User): Promise<boolean> => {
-  const tasks = await findAllRefTask();
-  const userTask = await findAllUserTask();
-
-  const taskIds = tasks.map((task) => task.id);
-  const clickedTaskIds = userTask
-    .filter((activity) => activity.userId === user.telegramUserId)
-    .map((activity) => activity.taskId);
-
-  const uniqueClickedTaskIds = new Set(clickedTaskIds);
-
-  return taskIds.every((taskId) => uniqueClickedTaskIds.has(taskId));
+  return inviteMilestones.some((milestone) => user.points === milestone.count);
 };
 
 // Set up a scheduled task to check for inactive users
@@ -316,7 +284,7 @@ export const resetUsersData = async () => {
 
   const duration = now.hours();
   const isWithinLast24Hours = now.isAfter(duration);
-  
+
   allUsers.forEach(async (user) => {
     if (duration > 24) {
       user.tapGuru = {

@@ -38,3 +38,17 @@ export const RefillTokenRequirements: { [level: number]: number } = {
   4: 250000,
   5: 1250000,
 };
+
+
+
+export const inviteMilestones = [
+  { count: 5, reward: 50000 },
+  { count: 10, reward: 200000 },
+  { count: 25, reward: 250000 },
+  { count: 50, reward: 300000 },
+  { count: 100, reward: 500000 },
+  { count: 500, reward: 2500000 },
+  { count: 1000, reward: 3500000 },
+  { count: 10000, reward: 12000000 },
+  { count: 50000, reward: 120000000 },
+];

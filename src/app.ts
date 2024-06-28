@@ -41,8 +41,9 @@ AppDataSource.initialize()
     bot.start(async (ctx) => {
       const username = ctx.message!.from!.username;
       const welcomeMessage = `
-    Hey, @${username}! Welcome to Base! Tap on the coin and see your balance rise.\n\nBase is a Decentralized Exchange on the Solana Blockchain. The biggest part of Base Token TAPS distribution will occur among the players here.\n\nGot friends, relatives, co-workers?\nBring them all into the game.\nMore buddies, more coins.
+    Hey, @${username}! Welcome to Tap on Base(Eraswap)! Tap on the coin and see your balance rise.\n\nEraswap is a hybrid Mini Telegram. Tap to earn seamless and efficient DEX with Base.\n\nTrade + Earn + Launchpad on the leading on Base.\nGot friends, relatives, co-workers?\nBring them all into the game.\nMore buddies, more coins.
       `;
+
 
       const referredBy = ctx.message.text.split(" ")[1];
 
