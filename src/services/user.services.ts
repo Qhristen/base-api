@@ -5,6 +5,17 @@ import { AppDataSource } from "../lib/data-source";
 import { Bot } from "../lib/telegram";
 import moment from "moment";
 import { User_Referal } from "../entities/user_referral.entity";
+import { Special_Task } from "../entities/special_task.entity";
+import { User_activity } from "../entities/user_activity.entity";
+import { League_Task } from "../entities/league_task.entity";
+import { User_task } from "../entities/user_task.entity";
+import {
+  findAllLeagueTask,
+  findAllRefTask,
+  findAllSpecialTask,
+  findAllUserActivity,
+  findAllUserTask,
+} from "./task.services";
 
 const userRepository = AppDataSource.getRepository(User);
 const referalRepository = AppDataSource.getRepository(User_Referal);
@@ -208,6 +219,57 @@ export const updateUser = async (userId: string, data: Partial<User>) => {
   await userRepository.update({ telegramUserId: userId }, data);
 };
 
+export const areAllSpecialActivitiesDone = async (
+  user: User
+): Promise<boolean> => {
+  const tasks = await findAllSpecialTask();
+  const userActivities = await findAllUserActivity();
+  for (const task of tasks) {
+    for (const activity of task.activities) {
+      const userActivity = userActivities.find(
+        (ua) =>
+          ua.activityId === activity.id &&
+          ua.taskId === task.id &&
+          ua.userId === user.telegramUserId
+      );
+
+      if (!userActivity || !userActivity.clicked) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
+
+export const areAllLeagueTasksDone = async (user: User): Promise<boolean> => {
+  const tasks = await findAllLeagueTask();
+  const userTask = await findAllUserTask();
+
+  const taskIds = tasks.map((task) => task.id);
+  const clickedTaskIds = userTask
+    .filter((activity) => activity.userId === user.telegramUserId)
+    .map((activity) => activity.taskId);
+
+  const uniqueClickedTaskIds = new Set(clickedTaskIds);
+
+  return taskIds.every((taskId) => uniqueClickedTaskIds.has(taskId));
+};
+
+export const areAllRefTasksDone = async (user: User): Promise<boolean> => {
+  const tasks = await findAllRefTask();
+  const userTask = await findAllUserTask();
+
+  const taskIds = tasks.map((task) => task.id);
+  const clickedTaskIds = userTask
+    .filter((activity) => activity.userId === user.telegramUserId)
+    .map((activity) => activity.taskId);
+
+  const uniqueClickedTaskIds = new Set(clickedTaskIds);
+
+  return taskIds.every((taskId) => uniqueClickedTaskIds.has(taskId));
+};
+
 // Set up a scheduled task to check for inactive users
 export const incrementUserPoints = async () => {
   const allUsers = await userRepository.find();
@@ -252,12 +314,11 @@ export const resetUsersData = async () => {
   const allUsers = await userRepository.find();
   const now = moment();
 
-  // Subtract 24 hours from the current time
-  const twentyFourHoursAgo = now.clone().subtract(24, "hours");
-
-  const isWithinLast24Hours = now.isAfter(twentyFourHoursAgo);
+  const duration = now.hours();
+  const isWithinLast24Hours = now.isAfter(duration);
+  
   allUsers.forEach(async (user) => {
-    if (isWithinLast24Hours) {
+    if (duration > 24) {
       user.tapGuru = {
         active: false,
         max: 3,

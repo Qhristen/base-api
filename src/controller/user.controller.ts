@@ -1,31 +1,25 @@
 import { NextFunction, Request, Response } from "express";
+import AppError from "../lib/appError";
 import {
-  rankThresholds,
   RefillTokenRequirements,
-  tokenRequirements,
+  tokenRequirements
 } from "../lib/constant";
 import { CreateUserInput } from "../schema/user.schema";
 import {
-  addPoints,
+  findAllLeagueTask
+} from "../services/task.services";
+import {
   addTouches,
+  areAllLeagueTasksDone,
+  areAllRefTasksDone,
+  areAllSpecialActivitiesDone,
   baseStats,
-  checkMilestoneRewards,
   createUser,
   findAllUsers,
   findOneUser,
   findUserReferers,
-  updateLastInteraction,
-  updateRank,
+  updateLastInteraction
 } from "../services/user.services";
-import AppError from "../lib/appError";
-import {
-  findAllLeagueTask,
-  findAllRefTask,
-  findAllSpecialTask,
-  findAllUserActivity,
-  findAllUserTask,
-} from "../services/task.services";
-import { Special_Task } from "../entities/special_task.entity";
 
 let userIntervals: { [key: string]: NodeJS.Timeout } = {};
 
@@ -71,12 +65,20 @@ export const getCurrentUser = async (
     const user = await findOneUser(userId);
 
     if (!user) return;
+   const isSpecialDOne = await areAllSpecialActivitiesDone(user);
+   const isRefDone = await areAllRefTasksDone(user);
+   const isLeagueDone = await areAllLeagueTasksDone(user);
 
     await updateLastInteraction(String(userId));
     res.status(200).json({
       status: "success",
       data: {
-        user,
+        user: {
+        ...user,
+        isSpecialDOne: isSpecialDOne ? true : false,
+        isLeagueDone: isLeagueDone ? true : false,
+        isRefDone: isRefDone ? true : false
+        }
       },
     });
   } catch (err: any) {
