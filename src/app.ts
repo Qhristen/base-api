@@ -114,7 +114,7 @@ AppDataSource.initialize()
               [
                 {
                   text: "Join community",
-                  callback_data: "join",
+                  url: "https://t.me/taponeraswap",
                 },
               ],
               [
@@ -211,7 +211,7 @@ AppDataSource.initialize()
       await updateLastInteraction(String(userId));
       let user = await findOneUser(String(userId));
 
-      ctx.reply(
+      ctx.reply( 
         `Join our socials so you do not miss any important news or updates.`,
         {
           reply_markup: {
@@ -219,19 +219,25 @@ AppDataSource.initialize()
               [
                 {
                   text: "Join Base community",
-                  url: `${process.env.ORIGIN}`,
+                  url: `https://t.me/taponeraswap`,
                 },
               ],
               [
                 {
                   text: "Base on X",
-                  url: `${process.env.ORIGIN}`,
+                  url: `https://x.com/eraswap_`,
                 },
               ],
               [
                 {
                   text: "Base website",
-                  url: `${process.env.ORIGIN}`,
+                  url: `http://www.eraswap.club/`,
+                },
+              ],
+              [
+                {
+                  text: "Base Discord Channel",
+                  url: `https://discord.gg/scfW5Xkc6w`,
                 },
               ],
               [
