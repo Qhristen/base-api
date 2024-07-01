@@ -280,13 +280,9 @@ export const incrementAutobot = async () => {
 // Set up a scheduled task to check for inactive users
 export const resetUsersData = async () => {
   const allUsers = await userRepository.find();
-  const now = moment();
-
-  const duration = now.hours();
-  const isWithinLast24Hours = now.isAfter(duration);
 
   allUsers.forEach(async (user) => {
-    if (duration > 24) {
+
       user.tapGuru = {
         active: false,
         max: 3,
@@ -298,7 +294,7 @@ export const resetUsersData = async () => {
         min: 3,
       };
       await user.save();
-    }
+    
   });
 };
 
@@ -313,7 +309,7 @@ export const remindInactiveUsers = async () => {
     const duration = moment.duration(now.diff(lastInteraction));
     const hours = duration.asHours();
 
-    if (hours > 24) {
+    if (hours > 48) {
       await Bot.telegram.sendMessage(
         user.telegramUserId,
         "You have not interacted with the bot for over 24 hours. Please come back and check your points!",

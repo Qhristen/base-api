@@ -41,7 +41,7 @@ AppDataSource.initialize()
     bot.start(async (ctx) => {
       const username = ctx.message!.from!.username;
       const welcomeMessage = `
-    Hey, @${username}! Welcome to Tap on Base(Eraswap)! Tap on the coin and see your balance rise.\n\nEraswap is a hybrid Mini Telegram. Tap to earn seamless and efficient DEX with Base.\n\nTrade + Earn + Launchpad on the leading on Base.\nGot friends, relatives, co-workers?\nBring them all into the game.\nMore buddies, more coins.
+    Hey, @${username}! Welcome to Tap on Base(Eraswap)! Tap on the coin and see your balance rise.\n\nEraswap is a hybrid Mini Telegram. Tap to earn seamless and efficient DEX with Base.\n\nTrade + Earn + Launchpad on the leading on Base.\n\nGot friends, relatives, co-workers?\nBring them all into the game.\nMore buddies, more coins.
       `;
 
 
@@ -231,7 +231,7 @@ AppDataSource.initialize()
               [
                 {
                   text: "Base website",
-                  url: `http://www.eraswap.club/`,
+                  url: `https://eraswap.club`,
                 },
               ],
               [
